@@ -1,6 +1,9 @@
+// src/components/TopBar.jsx
+import "./TopBar.css";
+
 function TopBar() {
   return (
-    <div style={{background:"#8B0000",color:"white",padding:"10px",textAlign:"center"}}>
+    <div className="top-bar">
       Free Delivery on Orders Above ₹499
     </div>
   );

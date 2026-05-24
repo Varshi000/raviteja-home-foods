@@ -1,23 +1,30 @@
-import "./SweetsPage.css";
+import { useEffect, useState } from "react";
+import ProductCard from "./ProductCard";
 import productData from "../data/productData.json";
-import ProductCard from "../components/ProductCard";
+import "./SweetsPage.css";
 
 function SweetsPage() {
-  const sweets = productData.filter(
-    (item) => item.category === "Sweets"
-  );
+  const [sweets, setSweets] = useState([]);
+
+  useEffect(() => {
+    const sweetsProducts = productData.filter(
+      (item) => item.category === "Sweets"
+    );
+    setSweets(sweetsProducts);
+  }, []);
 
   return (
     <section className="products-page">
-      <h2 className="page-title">SWEETS COLLECTION</h2>
-      <h3 className="sub-title">
-  Taste the tradition crafted with love ❤️
-</h3>
-
-      <div className="product-grid">
-        {sweets.map((item) => (
-          <ProductCard key={item.id} item={item} />
-        ))}
+      <div className="title-wrapper">
+        <h2 className="category-title">SWEETS COLLECTION</h2>
+        <h5 className="page-subtitle">Taste the tradition crafted with love ❤️</h5>
+      </div>
+      <div className="container">
+        <div className="product-grid">
+          {sweets.map((item) => (
+            <ProductCard key={item.id} item={item} />
+          ))}
+        </div>
       </div>
     </section>
   );

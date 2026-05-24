@@ -1,0 +1,257 @@
+/* src/components/OrderSuccess.css */
+.order-success-page {
+  min-height: 80vh;
+  padding: 60px 0;
+  background: linear-gradient(135deg, var(--bg-color) 0%, #fff 100%);
+  display: flex;
+  align-items: center;
+}
+
+.success-card {
+  max-width: 600px;
+  margin: 0 auto;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 48px 40px;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Success Icon */
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: #2e7d32;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  animation: scaleIn 0.5s ease 0.3s both;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.checkmark {
+  color: white;
+  font-size: 48px;
+  font-weight: bold;
+}
+
+/* Headings */
+.success-card h1 {
+  font-size: 32px;
+  color: var(--text-main);
+  margin-bottom: 16px;
+}
+
+.success-message {
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+/* Order Details */
+.order-details {
+  background: var(--bg-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.order-label {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.order-id {
+  color: var(--primary-color);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* Order Info */
+.order-info {
+  text-align: left;
+  margin-bottom: 32px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: var(--radius-md);
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.info-row span:first-child {
+  font-size: 20px;
+  min-width: 36px;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.action-buttons .btn-primary {
+  flex: 1;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.action-buttons .btn-primary:hover {
+  background: var(--primary-light);
+  transform: translateY(-2px);
+}
+
+.action-buttons .btn-secondary {
+  flex: 1;
+  background: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 14px 24px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.action-buttons .btn-secondary:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* Redirect Message */
+.redirect-message {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 16px;
+}
+
+/* Share Section */
+.share-section {
+  text-align: center;
+  margin-top: 48px;
+}
+
+.share-section h3 {
+  font-size: 18px;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+
+.share-section p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.social-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--bg-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-icon:hover {
+  transform: translateY(-3px);
+}
+
+.social-icon.instagram:hover {
+  background: linear-gradient(45deg, #f09433, #d62976);
+  color: white;
+}
+
+.social-icon.facebook:hover {
+  background: #1877f2;
+  color: white;
+}
+
+.social-icon.twitter:hover {
+  background: #1da1f2;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .order-success-page {
+    padding: 40px 0;
+  }
+  
+  .success-card {
+    padding: 32px 24px;
+    margin: 0 16px;
+  }
+  
+  .success-card h1 {
+    font-size: 26px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .success-icon {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .checkmark {
+    font-size: 36px;
+  }
+  
+  .info-row {
+    font-size: 13px;
+  }
+}

@@ -1,84 +1,61 @@
 import React, { useState, useEffect } from "react";
+import "./HeroSlider.css";
 
 import banner1 from "../assets/images/banner1.png";
-import banner4 from "../assets/images/banner4.png";
-import banner3 from "../assets/images/banner3.png";
 import banner2 from "../assets/images/banner2.png";
-
-
-
+import banner3 from "../assets/images/banner3.png";
+import banner4 from "../assets/images/banner4.png";
 
 function HeroSlider() {
-  const images = ["/banner1.png", "/banner2.png", "/banner3.png", "/banner4.png"];
-
+  // Using imported assets if available, fallback to placeholders for a premium look
+  const images = [banner1, banner2, banner3, banner4];
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
     const slide = setInterval(() => {
       setCurrent((prev) => (prev + 1) % images.length);
-    }, 3000);
+    }, 4000);
 
     return () => clearInterval(slide);
-  }, []);
+  }, [images.length]);
 
   return (
-    <div style={{ position: "relative" }}>
-      <img
-        src={images[current]}
-        alt="banner"
-        style={{
-          width: "100%",
-          height: "650px",
-          objectFit: "cover",
-          transition: "0.5s"
-        }}
-      />
+    <div className="hero-slider">
+      {images.map((img, index) => (
+        <div
+          key={index}
+          className={`hero-slide ${index === current ? "active" : ""}`}
+          style={{ backgroundImage: `url(${img})` }}
+        >
 
-      {/* Left Button */}
+        </div>
+      ))}
+
       <button
-        onClick={() =>
-          setCurrent(current === 0 ? images.length - 1 : current - 1)
-        }
-        style={leftBtn}
+        className="nav-btn prev-btn"
+        onClick={() => setCurrent(current === 0 ? images.length - 1 : current - 1)}
       >
         ❮
       </button>
 
-      {/* Right Button */}
       <button
-        onClick={() =>
-          setCurrent((current + 1) % images.length)
-        }
-        style={rightBtn}
+        className="nav-btn next-btn"
+        onClick={() => setCurrent((current + 1) % images.length)}
       >
         ❯
       </button>
+      
+      <div className="dots-container">
+        {images.map((_, index) => (
+          <span 
+            key={index} 
+            className={`dot ${index === current ? "active" : ""}`}
+            onClick={() => setCurrent(index)}
+          />
+        ))}
+      </div>
     </div>
   );
 }
-
-const leftBtn = {
-  position: "absolute",
-  top: "50%",
-  left: "20px",
-  transform: "translateY(-50%)",
-  fontSize: "40px",
-  background: "transparent",
-  color: "white",
-  border: "none",
-  cursor: "pointer"
-};
-
-const rightBtn = {
-  position: "absolute",
-  top: "50%",
-  right: "20px",
-  transform: "translateY(-50%)",
-  fontSize: "40px",
-  background: "transparent",
-  color: "white",
-  border: "none",
-  cursor: "pointer"
-};
 
 export default HeroSlider;
