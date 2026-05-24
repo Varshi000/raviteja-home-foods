@@ -5,9 +5,9 @@ import {
   FaBox, 
   FaTags, 
   FaClipboardList,
-  FaUsers,
   FaSignOutAlt,
-  FaStore
+  FaStore,
+  FaTruck
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import "./AdminSidebar.css";
@@ -20,7 +20,7 @@ function AdminSidebar() {
     { icon: <FaBox />, label: "Products", path: "/admin/products" },
     { icon: <FaTags />, label: "Categories", path: "/admin/categories" },
     { icon: <FaClipboardList />, label: "Orders", path: "/admin/orders" },
-    { icon: <FaUsers />, label: "Customers", path: "/admin/customers" },
+    { icon: <FaTruck />, label: "Shipping", path: "/admin/shipping" },
   ];
 
   return (

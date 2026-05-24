@@ -338,3 +338,65 @@ export const fetchStates = async (country) => {
   const data = await handleResponse(response);
   return data.states || [];
 };
+
+// ==================== ADMIN SHIPPING API ====================
+
+export const getShippingRules = async (adminId) => {
+  const headers = getAuthHeaders();
+  const response = await fetch(`${BASE_URL}/shipping/admin/${adminId}/rules`, { headers });
+  return handleResponse(response);
+};
+
+export const createShippingRules = async (adminId, country) => {
+  const headers = {
+    "Content-Type": "application/json",
+    ...getAuthHeaders(),
+  };
+  const response = await fetch(`${BASE_URL}/shipping/admin/${adminId}/rules`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ country, states: [] }),
+  });
+  return handleResponse(response);
+};
+
+export const addShippingState = async (adminId, country, stateName) => {
+  const headers = {
+    "Content-Type": "application/json",
+    ...getAuthHeaders(),
+  };
+  const response = await fetch(`${BASE_URL}/shipping/admin/${adminId}/add-state`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      country,
+      state: {
+        state_name: stateName,
+        zones: [],
+      },
+    }),
+  });
+  return handleResponse(response);
+};
+
+export const addShippingZone = async (adminId, country, stateName, zoneData) => {
+  const headers = {
+    "Content-Type": "application/json",
+    ...getAuthHeaders(),
+  };
+  const response = await fetch(`${BASE_URL}/shipping/admin/${adminId}/add-zone`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      country,
+      state_name: stateName,
+      zone: {
+        start_zipcode: parseInt(zoneData.startZipcode),
+        end_zipcode: parseInt(zoneData.endZipcode),
+        charge_per_kg: parseFloat(zoneData.chargePerKg),
+        free_delivery_min_order_value: parseFloat(zoneData.freeDeliveryMinOrderValue),
+      },
+    }),
+  });
+  return handleResponse(response);
+};
