@@ -35,7 +35,6 @@ function AdminCategories() {
     return { "Authorization": `Bearer ${authToken}` };
   };
 
-  // Helper: Convert subcategories from backend format to display format
   const normalizeSubcategoriesForDisplay = (subcategories) => {
     if (!subcategories || !Array.isArray(subcategories)) return [];
     return subcategories.map(sub => {
@@ -45,7 +44,6 @@ function AdminCategories() {
     });
   };
 
-  // Helper: Convert subcategories from display format to backend format
   const normalizeSubcategoriesForApi = (subcategories) => {
     if (!subcategories || !Array.isArray(subcategories)) return [];
     return subcategories.map(sub => {
@@ -55,7 +53,6 @@ function AdminCategories() {
     });
   };
 
-  // Message helpers
   const showSuccessMessage = (message) => {
     setSuccess(message);
     setTimeout(() => setSuccess(null), 3000);
@@ -67,63 +64,56 @@ function AdminCategories() {
     alert(message);
   };
 
-  // Load categories - FIXED: Shows ALL retail categories (not admin-specific)
-  // src/components/admin/AdminCategories.jsx
-// Replace the loadCategories function with this:
+  const loadCategories = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const authToken = token || localStorage.getItem("access_token");
+      
+      const response = await fetch(`${BASE_URL}/categories/`, {
+        headers: { "Authorization": `Bearer ${authToken}` },
+      });
 
-const loadCategories = async () => {
-  setLoading(true);
-  setError(null);
-  try {
-    const authToken = token || localStorage.getItem("access_token");
-    
-    // Use the main categories endpoint that returns FULL category objects
-    const response = await fetch(`${BASE_URL}/categories/`, {
-      headers: { "Authorization": `Bearer ${authToken}` },
-    });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      console.log("Categories API response:", data);
+      
+      let categoriesArray = [];
+      
+      if (data.data && Array.isArray(data.data)) {
+        categoriesArray = data.data;
+      } else if (Array.isArray(data)) {
+        categoriesArray = data;
+      } else if (data.categories && Array.isArray(data.categories)) {
+        categoriesArray = data.categories;
+      } else {
+        categoriesArray = [];
+      }
+      
+      const normalizedCategories = categoriesArray
+        .filter(cat => cat && cat.name)
+        .map(cat => ({
+          id: cat._id || cat.id,
+          name: cat.name,
+          business_type: cat.business_type || "retail",
+          admin_id: cat.admin_id || "",
+          subcategory: normalizeSubcategoriesForDisplay(cat.subcategory || [])
+        }));
+
+      console.log("Normalized categories:", normalizedCategories);
+      setCategories(normalizedCategories);
+      
+    } catch (err) {
+      console.error("Failed to load categories:", err);
+      showErrorMessage("Failed to load categories. Please refresh the page.");
+      setCategories([]);
+    } finally {
+      setLoading(false);
     }
-
-    const data = await response.json();
-    console.log("Categories API response:", data);
-    
-    let categoriesArray = [];
-    
-    // Handle different response formats dynamically
-    if (data.data && Array.isArray(data.data)) {
-      categoriesArray = data.data;
-    } else if (Array.isArray(data)) {
-      categoriesArray = data;
-    } else if (data.categories && Array.isArray(data.categories)) {
-      categoriesArray = data.categories;
-    } else {
-      categoriesArray = [];
-    }
-    
-    // Convert to object array with proper structure INCLUDING subcategories
-    const normalizedCategories = categoriesArray
-      .filter(cat => cat && cat.name) // Remove null/undefined
-      .map(cat => ({
-        id: cat._id || cat.id,
-        name: cat.name,
-        business_type: cat.business_type || "retail",
-        admin_id: cat.admin_id || "",
-        subcategory: normalizeSubcategoriesForDisplay(cat.subcategory || [])
-      }));
-
-    console.log("Normalized categories with subcategories:", normalizedCategories);
-    setCategories(normalizedCategories);
-    
-  } catch (err) {
-    console.error("Failed to load categories:", err);
-    showErrorMessage("Failed to load categories. Please refresh the page.");
-    setCategories([]);
-  } finally {
-    setLoading(false);
-  }
-}; 
+  };
 
   useEffect(() => {
     if (token) {
@@ -131,7 +121,6 @@ const loadCategories = async () => {
     }
   }, [token]);
 
-  // Create new category
   const handleAddCategory = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -143,7 +132,6 @@ const loadCategories = async () => {
       return;
     }
 
-    // Check for duplicate in existing categories
     const existingCategory = categories.find(
       cat => cat.name.toLowerCase() === formData.name.trim().toLowerCase()
     );
@@ -202,7 +190,6 @@ const loadCategories = async () => {
     }
   };
 
-  // Update category name
   const handleUpdateCategory = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -214,7 +201,6 @@ const loadCategories = async () => {
       return;
     }
 
-    // Check for duplicate (if name changed)
     if (formData.name.trim().toLowerCase() !== selectedCategory.name.toLowerCase()) {
       const existingCategory = categories.find(
         cat => cat.name.toLowerCase() === formData.name.trim().toLowerCase() && cat.id !== selectedCategory.id
@@ -276,7 +262,6 @@ const loadCategories = async () => {
     }
   };
 
-  // Delete category
   const handleDeleteCategory = async (category) => {
     if (!window.confirm(`⚠️ Are you sure you want to delete "${category.name}"?\n\nThis will also delete all products in this category. This action cannot be undone!`)) {
       return;
@@ -309,14 +294,12 @@ const loadCategories = async () => {
     }
   };
 
-  // Add subcategory
   const handleAddSubcategory = async () => {
     if (!subcategoryName.trim()) {
       showErrorMessage("Please enter a subcategory name");
       return;
     }
 
-    // Check for duplicate subcategory
     const existingSubs = selectedCategory.subcategory || [];
     if (existingSubs.some(sub => sub.toLowerCase() === subcategoryName.trim().toLowerCase())) {
       showErrorMessage(`❌ Subcategory "${subcategoryName.trim()}" already exists in this category!`);
@@ -365,14 +348,12 @@ const loadCategories = async () => {
     }
   };
 
-  // Edit subcategory
   const handleEditSubcategory = async () => {
     if (!subcategoryName.trim()) {
       showErrorMessage("Please enter a subcategory name");
       return;
     }
 
-    // Check for duplicate (if name changed and already exists)
     if (subcategoryName.trim().toLowerCase() !== selectedSubcategory.toLowerCase()) {
       const existingSubs = selectedCategory.subcategory || [];
       if (existingSubs.some(sub => sub.toLowerCase() === subcategoryName.trim().toLowerCase())) {
@@ -426,50 +407,6 @@ const loadCategories = async () => {
     }
   };
 
-  // Delete subcategory
-  const handleDeleteSubcategory = async (category, subcategoryToDelete) => {
-    if (!window.confirm(`⚠️ Delete "${subcategoryToDelete}"?`)) return;
-
-    setSubmitting(true);
-    try {
-      const categoryId = category.id || category._id;
-      const currentDisplaySubs = category.subcategory || [];
-      const updatedDisplaySubs = currentDisplaySubs.filter(sub => sub !== subcategoryToDelete);
-      const updatedApiSubs = normalizeSubcategoriesForApi(updatedDisplaySubs);
-      
-      const authToken = token || localStorage.getItem("access_token");
-      const payload = {
-        name: category.name,
-        business_type: category.business_type,
-        subcategory: updatedApiSubs,
-      };
-
-      const response = await fetch(`${BASE_URL}/categories/${categoryId}`, {
-        method: "PUT",
-        headers: {
-          "Authorization": `Bearer ${authToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        showErrorMessage(errorData.detail || `Failed to delete subcategory.`);
-        setSubmitting(false);
-        return;
-      }
-
-      await loadCategories();
-      showSuccessMessage(`✅ Subcategory "${subcategoryToDelete}" deleted successfully!`);
-    } catch (err) {
-      console.error("Failed to delete subcategory:", err);
-      showErrorMessage("❌ Network error. Please check your connection and try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   const resetForm = () => {
     setFormData({
       name: "",
@@ -513,18 +450,6 @@ const loadCategories = async () => {
     total: categories.length,
     withSubcategories: categories.filter(c => c.subcategory?.length > 0).length,
     totalSubcategories: categories.reduce((sum, cat) => sum + (cat.subcategory?.length || 0), 0),
-  };
-
-  const getCategoryIcon = (name) => {
-    const icons = {
-      "Sweets": "🍬", "Namkeen": "🍿", "Pickles": "🥒", "Chilli Powders": "🌶️",
-      "Daily Essentials": "🥄", "Gift Packs": "🎁", "Health Mix": "💪", "Beverages": "🥤",
-      "Traditional Snacks": "🍪", "Spice Powders": "🧂", "Organic Products": "🌱",
-      "Frozen Foods": "❄️", "Breakfast Mixes": "🍳", "Papads & Fryums": "🍘",
-      "Chutney Powders": "🥫", "Ready to Eat": "🍛", "Sweeteners": "🍯",
-      "Festival Specials": "🎉", "Kids Special": "🧒", "Diet Foods": "🥗",
-    };
-    return icons[name] || "📦";
   };
 
   return (
@@ -600,61 +525,58 @@ const loadCategories = async () => {
               <p>Loading categories...</p>
             </div>
           ) : (
-            <div className="categories-grid">
-              {filteredCategories.map((category) => (
-                <div key={category.id} className="category-card">
-                  <div className="category-header">
-                    <div className="category-icon">{getCategoryIcon(category.name)}</div>
-                    <div className="category-info">
-                      <h3>{category.name}</h3>
-                      <span className="subcategory-count">{category.subcategory?.length || 0} subcategories</span>
-                    </div>
-                    <div className="category-actions">
-                      <button className="icon-btn edit" onClick={() => handleEdit(category)} title="Edit Category">✏️</button>
-                      <button className="icon-btn delete" onClick={() => handleDeleteCategory(category)} title="Delete Category">🗑️</button>
-                    </div>
-                  </div>
-                  
-                  <div className="subcategory-section">
-                    <div className="subcategory-header">
-                      <h4>Subcategories</h4>
-                      <button className="add-subcategory-btn" onClick={() => openAddSubcategory(category)}>
-                        + Add
-                      </button>
-                    </div>
-                    <div className="subcategory-list">
-                      {category.subcategory && category.subcategory.length > 0 ? (
-                        category.subcategory.map((sub, idx) => (
-                          <div key={idx} className="subcategory-item">
-                            <span className="subcategory-name">{sub}</span>
-                            <div className="subcategory-actions">
+            <div className="categories-table-container">
+              <table className="categories-table">
+                <thead>
+                  <tr>
+                    <th>S.No</th>
+                    <th>Category Name</th>
+                    <th>Subcategories</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCategories.map((category, index) => (
+                    <tr key={category.id}>
+                      <td className="serial-no">{index + 1}</td>
+                      <td className="category-name">{category.name}</td>
+                      <td className="subcategories-list">
+                        <div className="subcategory-tags">
+                          {category.subcategory && category.subcategory.length > 0 ? (
+                            <>
+                              {category.subcategory.map((sub, idx) => (
+                                <span key={idx} className="subcategory-tag">
+                                  {sub}
+                                </span>
+                              ))}
                               <button 
-                                className="edit-sub" 
-                                onClick={() => openEditSubcategory(category, sub)}
-                                title="Edit Subcategory"
+                                className="add-sub-tag"
+                                onClick={() => openAddSubcategory(category)}
                               >
-                                ✏️
+                                + Add
                               </button>
-                              <button 
-                                className="delete-sub" 
-                                onClick={() => handleDeleteSubcategory(category, sub)}
-                                title="Delete Subcategory"
-                              >
-                                🗑️
-                              </button>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="no-subcategories">
-                          <span>No subcategories yet</span>
-                          <button onClick={() => openAddSubcategory(category)}>Add first subcategory</button>
+                            </>
+                          ) : (
+                            <button 
+                              className="add-subcategory-btn-table"
+                              onClick={() => openAddSubcategory(category)}
+                            >
+                              + Add Subcategory
+                            </button>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                      </td>
+                      <td className="actions">
+                        <button className="edit-btn" onClick={() => handleEdit(category)} title="Edit Category">✏️</button>
+                        <button className="delete-btn" onClick={() => handleDeleteCategory(category)} title="Delete Category">🗑️</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {filteredCategories.length === 0 && (
+                <div className="no-results">No categories found</div>
+              )}
             </div>
           )}
         </div>

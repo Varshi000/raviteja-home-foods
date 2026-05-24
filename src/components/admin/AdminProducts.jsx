@@ -20,12 +20,15 @@ function AdminProducts() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [availableSubcategories, setAvailableSubcategories] = useState([]);
+  const [showSubcategoryField, setShowSubcategoryField] = useState(false);
   const { token, user } = useAuth();
 
   const [formData, setFormData] = useState({
     product_name: "",
     description: "",
     category_id: "",
+    subcategory: "",
     pricing: [{ weight: "", price: "", stock: "" }],
     images_url: [],
     is_active: true,
@@ -36,7 +39,6 @@ function AdminProducts() {
     return { "Authorization": `Bearer ${authToken}` };
   };
 
-  // Message helpers
   const showSuccessMessage = (message) => {
     setSuccess(message);
     setTimeout(() => setSuccess(null), 3000);
@@ -48,13 +50,12 @@ function AdminProducts() {
     alert(message);
   };
 
-  // Get category name by ID
   const getCategoryName = (categoryId) => {
+    if (!categoryId) return "N/A";
     const category = categories.find(cat => cat.id === categoryId);
     return category ? category.name : "N/A";
   };
 
-  // Upload images to S3
   const uploadImages = async (files) => {
     setUploadingImages(true);
     const uploadedUrls = [];
@@ -98,7 +99,6 @@ function AdminProducts() {
     }
   };
 
-  // Handle image file selection
   const handleImageSelect = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -120,7 +120,6 @@ function AdminProducts() {
     uploadImages(files);
   };
 
-  // Remove image from list
   const removeImage = (indexToRemove) => {
     setFormData(prev => ({
       ...prev,
@@ -128,7 +127,6 @@ function AdminProducts() {
     }));
   };
 
-  // Load products
   const loadProducts = async () => {
     setLoading(true);
     try {
@@ -146,35 +144,42 @@ function AdminProducts() {
     }
   };
 
-  // Load categories
   const loadCategories = async () => {
     try {
       const authToken = token || localStorage.getItem("access_token");
-      const response = await fetch(`${BASE_URL}/categories/all_Categories/retail`, {
+      
+      const response = await fetch(`${BASE_URL}/categories/`, {
         headers: { "Authorization": `Bearer ${authToken}` },
       });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
       
-      let categoryList = [];
-      if (Array.isArray(data)) {
-        categoryList = data.map((catName) => ({
-          id: catName.toLowerCase().replace(/\s+/g, '-'),
-          name: catName
-        }));
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      
+      const data = await response.json();
+      console.log("Categories API response:", data);
+      
+      let categoriesArray = [];
+      if (data.data && Array.isArray(data.data)) {
+        categoriesArray = data.data;
+      } else if (Array.isArray(data)) {
+        categoriesArray = data;
       } else {
-        categoryList = [
-          { id: "sweets", name: "Sweets" },
-          { id: "namkeen", name: "Namkeen" },
-          { id: "pickles", name: "Pickles" },
-          { id: "chilli-powders", name: "Chilli Powders" },
-          { id: "daily-essentials", name: "Daily Essentials" },
-          { id: "gift-packs", name: "Gift Packs" },
-        ];
+        categoriesArray = [];
       }
+      
+      const categoryList = categoriesArray
+        .filter(cat => cat && cat.name)
+        .map(cat => ({
+          id: cat._id || cat.id,
+          name: cat.name,
+          subcategories: cat.subcategory || []
+        }));
+      
+      console.log("Mapped categories with subcategories:", categoryList);
       setCategories(categoryList);
+      
     } catch (err) {
       console.error("Failed to load categories:", err);
+      setCategories([]);
     }
   };
 
@@ -185,7 +190,26 @@ function AdminProducts() {
     }
   }, [token]);
 
-  // Create product
+  const handleCategoryChange = (e) => {
+    const categoryId = e.target.value;
+    setFormData({ ...formData, category_id: categoryId, subcategory: "" });
+    
+    const selectedCat = categories.find(cat => cat.id === categoryId);
+    
+    if (selectedCat && selectedCat.subcategories && selectedCat.subcategories.length > 0) {
+      const subcats = selectedCat.subcategories.map(sub => {
+        if (typeof sub === 'string') return sub;
+        if (sub && typeof sub === 'object' && sub.name) return sub.name;
+        return String(sub);
+      });
+      setAvailableSubcategories(subcats);
+      setShowSubcategoryField(true);
+    } else {
+      setAvailableSubcategories([]);
+      setShowSubcategoryField(false);
+    }
+  };
+
   const handleAddProduct = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -218,6 +242,9 @@ function AdminProducts() {
       formDataToSend.append("description", formData.description || "");
       formDataToSend.append("business_type", "retail");
       formDataToSend.append("category_id", formData.category_id);
+      if (formData.subcategory) {
+        formDataToSend.append("subcategory", formData.subcategory);
+      }
       formDataToSend.append("pricing", JSON.stringify(validPricing.map(p => ({
         weight: p.weight,
         price: Number(p.price),
@@ -253,20 +280,33 @@ function AdminProducts() {
     }
   };
 
-  // Edit product - Open modal with product data
   const handleEditClick = (product) => {
     setSelectedProduct(product);
     
-    // Parse pricing data
     let pricingData = product.pricing || [];
     if (pricingData.length === 0) {
       pricingData = [{ weight: "", price: "", stock: "" }];
+    }
+    
+    const selectedCat = categories.find(cat => cat.id === product.category_id);
+    if (selectedCat && selectedCat.subcategories && selectedCat.subcategories.length > 0) {
+      const subcats = selectedCat.subcategories.map(sub => {
+        if (typeof sub === 'string') return sub;
+        if (sub && typeof sub === 'object' && sub.name) return sub.name;
+        return String(sub);
+      });
+      setAvailableSubcategories(subcats);
+      setShowSubcategoryField(true);
+    } else {
+      setAvailableSubcategories([]);
+      setShowSubcategoryField(false);
     }
     
     setFormData({
       product_name: product.product_name || "",
       description: product.description || "",
       category_id: product.category_id || "",
+      subcategory: product.subcategory || "",
       pricing: pricingData.map(p => ({
         weight: p.weight || "",
         price: p.price || "",
@@ -278,7 +318,6 @@ function AdminProducts() {
     setShowEditModal(true);
   };
 
-  // Update product - Save changes
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -305,6 +344,9 @@ function AdminProducts() {
       formDataToSend.append("product_name", formData.product_name.trim());
       formDataToSend.append("description", formData.description || "");
       formDataToSend.append("category_id", formData.category_id);
+      if (formData.subcategory) {
+        formDataToSend.append("subcategory", formData.subcategory);
+      }
       formDataToSend.append("pricing", JSON.stringify(validPricing.map(p => ({
         weight: p.weight,
         price: Number(p.price),
@@ -339,7 +381,6 @@ function AdminProducts() {
     }
   };
 
-  // Delete product
   const handleDeleteProduct = async (product) => {
     if (!window.confirm(`⚠️ Are you sure you want to delete "${product.product_name}"? This action cannot be undone!`)) {
       return;
@@ -375,10 +416,13 @@ function AdminProducts() {
       product_name: "",
       description: "",
       category_id: "",
+      subcategory: "",
       pricing: [{ weight: "", price: "", stock: "" }],
       images_url: [],
       is_active: true,
     });
+    setAvailableSubcategories([]);
+    setShowSubcategoryField(false);
     setSelectedProduct(null);
   };
 
@@ -414,8 +458,8 @@ function AdminProducts() {
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.product_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    const productCategory = getCategoryName(product.category_id);
-    const matchesCategory = selectedCategory === "all" || productCategory.toLowerCase() === selectedCategory;
+    const productCategoryName = getCategoryName(product.category_id);
+    const matchesCategory = selectedCategory === "all" || productCategoryName.toLowerCase() === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -523,9 +567,9 @@ function AdminProducts() {
                       </td>
                       <td className="product-name">{product.product_name}</td>
                       <td className="category-name">{getCategoryName(product.category_id)}</td>
-                      <td>{formatCurrency(product.pricing?.[0]?.price || 0)}</td>
-                      <td>{product.pricing?.[0]?.stock || "N/A"}</td>
-                      <td>
+                      <td className="price">{formatCurrency(product.pricing?.[0]?.price || 0)}</td>
+                      <td className="stock">{product.pricing?.[0]?.stock || "N/A"}</td>
+                      <td className="status">
                         <span className={`status-badge ${product.is_active ? "active" : "inactive"}`}>
                           {product.is_active ? "Active" : "Inactive"}
                         </span>
@@ -631,18 +675,18 @@ function AdminProducts() {
                   </div>
                 </div>
 
-                {/* Category */}
+                {/* Category & Subcategory */}
                 <div className="form-section">
                   <div className="section-title">
                     <span className="section-icon">📂</span>
-                    <h3>Category</h3>
+                    <h3>Category & Subcategory</h3>
                   </div>
 
                   <div className="form-group">
                     <label>Category *</label>
                     <select
                       value={formData.category_id}
-                      onChange={(e) => setFormData({...formData, category_id: e.target.value})}
+                      onChange={handleCategoryChange}
                       className="form-input"
                       required
                     >
@@ -652,6 +696,23 @@ function AdminProducts() {
                       ))}
                     </select>
                   </div>
+
+                  {showSubcategoryField && availableSubcategories.length > 0 && (
+                    <div className="form-group">
+                      <label>Subcategory (Optional)</label>
+                      <select
+                        value={formData.subcategory}
+                        onChange={(e) => setFormData({...formData, subcategory: e.target.value})}
+                        className="form-input"
+                      >
+                        <option value="">Select a subcategory</option>
+                        {availableSubcategories.map((sub, idx) => (
+                          <option key={idx} value={sub}>{sub}</option>
+                        ))}
+                      </select>
+                      <small className="field-hint">Select a subcategory for better product organization</small>
+                    </div>
+                  )}
                 </div>
 
                 {/* Pricing & Stock */}
@@ -823,18 +884,18 @@ function AdminProducts() {
                   </div>
                 </div>
 
-                {/* Category */}
+                {/* Category & Subcategory */}
                 <div className="form-section">
                   <div className="section-title">
                     <span className="section-icon">📂</span>
-                    <h3>Category</h3>
+                    <h3>Category & Subcategory</h3>
                   </div>
 
                   <div className="form-group">
                     <label>Category *</label>
                     <select
                       value={formData.category_id}
-                      onChange={(e) => setFormData({...formData, category_id: e.target.value})}
+                      onChange={handleCategoryChange}
                       className="form-input"
                       required
                     >
@@ -844,6 +905,22 @@ function AdminProducts() {
                       ))}
                     </select>
                   </div>
+
+                  {showSubcategoryField && availableSubcategories.length > 0 && (
+                    <div className="form-group">
+                      <label>Subcategory</label>
+                      <select
+                        value={formData.subcategory}
+                        onChange={(e) => setFormData({...formData, subcategory: e.target.value})}
+                        className="form-input"
+                      >
+                        <option value="">Select a subcategory</option>
+                        {availableSubcategories.map((sub, idx) => (
+                          <option key={idx} value={sub}>{sub}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 {/* Pricing & Stock */}
@@ -857,14 +934,14 @@ function AdminProducts() {
                     <div key={idx} className="pricing-row">
                       <input
                         type="text"
-                        placeholder="Weight (e.g., 250g, 500g, 1kg)"
+                        placeholder="Weight"
                         value={price.weight}
                         onChange={(e) => updatePricing(idx, "weight", e.target.value)}
                         className="pricing-weight"
                       />
                       <input
                         type="number"
-                        placeholder="Price (₹)"
+                        placeholder="Price"
                         value={price.price}
                         onChange={(e) => updatePricing(idx, "price", e.target.value)}
                         className="pricing-price"
