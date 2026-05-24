@@ -28,7 +28,9 @@ function Footer() {
       <div className="footer-main">
 
         <div className="footer-col brand-col">
-          <h2>RAVITEJA HOME FOODS</h2>
+          <Link to="/">
+            <img src="/logo.png" alt="Raviteja Home Foods" className="footer-logo" />
+          </Link>
           <p>
             More than food — it’s the happiness of family gatherings, the comfort of home, and the taste of traditions passed down with love.
           </p>

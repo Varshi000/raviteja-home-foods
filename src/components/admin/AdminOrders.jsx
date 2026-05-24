@@ -415,10 +415,8 @@ function AdminOrders() {
                                   <h4>Order Information</h4>
                                   <div className="customer-card">
                                     <p><strong>Order ID:</strong> {order.custom_order_id || order.id}</p>
-                                    <p><strong>Razorpay Order ID:</strong> {order.razorpay_order_id || "N/A"}</p>
                                     <p><strong>Payment ID:</strong> {order.razorpay_payment_id || "N/A"}</p>
                                     <p><strong>Order Date:</strong> {formatDate(order.created_at)}</p>
-                                    <p><strong>Last Updated:</strong> {formatDate(order.updated_at)}</p>
                                   </div>
                                 </div>
                               </div>
