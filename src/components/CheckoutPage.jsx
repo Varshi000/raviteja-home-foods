@@ -17,7 +17,7 @@ function CheckoutPage() {
   const [deliveryCharge, setDeliveryCharge] = useState(0);
   const [grandTotal, setGrandTotal] = useState(totalPreview);
   const [shippingAddress, setShippingAddress] = useState({
-    name: user?.name || "",
+    email: user?.email || "",
     mobile: "",
     address_line: "",
     city: "",
@@ -27,7 +27,7 @@ function CheckoutPage() {
   });
   const [billingSameAsShipping, setBillingSameAsShipping] = useState(true);
   const [billingAddress, setBillingAddress] = useState({
-    name: "",
+    email: "",
     mobile: "",
     address_line: "",
     city: "",
@@ -50,7 +50,7 @@ function CheckoutPage() {
   const validateForm = () => {
     const newErrors = {};
     
-    if (!shippingAddress.name.trim()) newErrors.name = "Name is required";
+    if (!shippingAddress.email.trim()) newErrors.email = "email is required";
     if (!shippingAddress.mobile.match(/^[0-9]{10}$/)) newErrors.mobile = "Valid 10-digit mobile number required";
     if (!shippingAddress.address_line.trim()) newErrors.address_line = "Address is required";
     if (!shippingAddress.city.trim()) newErrors.city = "City is required";
@@ -285,14 +285,14 @@ function CheckoutPage() {
             <form onSubmit={handlePayment} className="checkout-form">
               <div className="form-row">
                 <div className="form-group">
-                  <label>Full Name *</label>
+                  <label>Email *</label>
                   <input
-                    type="text"
-                    name="name"
-                    value={shippingAddress.name}
+                    type="email"
+                    name="email"
+                    value={shippingAddress.email}
                     onChange={handleShippingChange}
-                    placeholder="John Doe"
-                    className={`form-input ${errors.name ? "error" : ""}`}
+                    placeholder="john.doe@example.com"
+                    className={`form-input ${errors.email ? "error" : ""}`}
                   />
                   {errors.name && <span className="error-text">{errors.name}</span>}
                 </div>
