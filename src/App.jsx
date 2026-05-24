@@ -36,7 +36,8 @@ import AdminLogin from "./components/admin/AdminLogin";
 import AdminProducts from "./components/admin/AdminProducts";
 import AdminOrders from "./components/admin/AdminOrders";
 import AdminCategories from "./components/admin/AdminCategories";
-import AdminCustomers from "./components/admin/AdminCustomers";
+import AdminShipping from "./components/admin/AdminShipping";
+
 
 // Protected Route Component for Admin
 const ProtectedRoute = ({ children }) => {
@@ -241,13 +242,14 @@ function App() {
           } 
         />
         <Route 
-          path="/admin/customers" 
+          path="/admin/shipping" 
           element={
             <ProtectedRoute>
-              <AdminCustomers />
+              <AdminShipping />
             </ProtectedRoute>
           } 
         />
+
 
         {/* 404 Catch-all - Redirect to Home */}
         <Route path="*" element={<Navigate to="/" replace />} />
