@@ -4,40 +4,41 @@
 }
 
 .user-menu-button {
-  width: 45px;
-  height: 45px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: rgba(123, 17, 19, 0.05);
-  color: #7b1113;
-  font-size: 22px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--white);
+  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   border: none;
 }
 
 .user-menu-button:hover {
-  background: #7b1113;
-  color: white;
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(123, 17, 19, 0.3);
+  background: rgba(255, 255, 255, 0.25);
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
 }
 
 /* Avatar for logged in users */
 .user-avatar {
-  width: 45px;
-  height: 45px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7b1113, #9a1518);
-  color: white;
+  background: var(--secondary-color);
+  color: var(--primary-color);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 18px;
+  font-weight: 800;
+  font-size: 16px;
   text-transform: uppercase;
+  border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 /* Dropdown Menu */

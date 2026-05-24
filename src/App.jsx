@@ -6,7 +6,6 @@ import { useAuth } from "./context/AuthContext";
 // Public Components
 import TopBar from "./components/TopBar";
 import Header from "./components/Header";
-import Navbar from "./components/Navbar";
 import HeroSlider from "./components/HeroSlider";
 import StorySection from "./components/StorySection";
 import ProductSection from "./components/ProductSection";
@@ -71,7 +70,6 @@ const PublicLayout = ({ children }) => {
     <>
       <TopBar />
       <Header />
-      <Navbar />
       {children}
       <AvailableOn />
       <Footer />
@@ -85,7 +83,6 @@ const SimpleLayout = ({ children }) => {
     <>
       <TopBar />
       <Header />
-      <Navbar />
       {children}
       {/* No AvailableOn */}
       {/* No Footer */}

@@ -3,16 +3,16 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
-  FaUser,
-  FaBox,
-  FaHeart,
-  FaMapMarkerAlt,
-  FaTachometerAlt,
-  FaBoxes,
-  FaTags,
-  FaClipboardList,
-  FaSignOutAlt,
-} from "react-icons/fa";
+  User,
+  ShoppingBag,
+  Heart,
+  MapPin,
+  LayoutDashboard,
+  Boxes,
+  Tags,
+  ClipboardList,
+  LogOut,
+} from "lucide-react";
 import "./UserMenu.css";
 
 function UserMenu() {
@@ -54,29 +54,34 @@ function UserMenu() {
 
   // Regular user menu items
   const userMenuItems = [
-    { icon: <FaBox />, label: "My Orders", path: "/my-orders" },
-    { icon: <FaHeart />, label: "Wishlist", path: "/wishlist" },
-    { icon: <FaMapMarkerAlt />, label: "Addresses", path: "/addresses" },
+    { icon: <ShoppingBag size={16} />, label: "My Orders", path: "/my-orders" },
+    { icon: <Heart size={16} />, label: "Wishlist", path: "/wishlist" },
+    { icon: <MapPin size={16} />, label: "Addresses", path: "/addresses" },
   ];
 
   // Admin menu items (extra)
   const adminMenuItems = [
-    { icon: <FaTachometerAlt />, label: "Admin Dashboard", path: "/admin/dashboard" },
-    { icon: <FaBoxes />, label: "Manage Products", path: "/admin/products" },
-    { icon: <FaTags />, label: "Manage Categories", path: "/admin/categories" },
-    { icon: <FaClipboardList />, label: "All Orders", path: "/admin/orders" },
+    { icon: <LayoutDashboard size={16} />, label: "Admin Dashboard", path: "/admin/dashboard" },
+    { icon: <Boxes size={16} />, label: "Manage Products", path: "/admin/products" },
+    { icon: <Tags size={16} />, label: "Manage Categories", path: "/admin/categories" },
+    { icon: <ClipboardList size={16} />, label: "All Orders", path: "/admin/orders" },
   ];
 
   const menuItems = userIsAdmin ? [...adminMenuItems, ...userMenuItems] : userMenuItems;
 
   return (
     <div className="user-menu-container" ref={menuRef}>
-      <button className="user-menu-button" onClick={() => setIsOpen(!isOpen)}>
+      <button 
+        className="icon-wrapper user-menu-button" 
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="Account"
+      >
         {isAuthenticated ? (
           <div className="user-avatar">{getUserInitials()}</div>
         ) : (
-          <FaUser />
+          <User size={20} strokeWidth={2.2} />
         )}
+        <span className="icon-tooltip">Account</span>
       </button>
 
       {isOpen && (
@@ -105,7 +110,7 @@ function UserMenu() {
                 <div className="divider"></div>
 
                 <div className="dropdown-item logout-item" onClick={handleLogout}>
-                  <span className="icon"><FaSignOutAlt /></span>
+                  <span className="icon"><LogOut size={16} /></span>
                   <span>Logout</span>
                 </div>
               </div>

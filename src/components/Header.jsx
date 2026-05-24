@@ -1,54 +1,281 @@
 // src/components/Header.jsx
 import "./Header.css";
-import { Link } from "react-router-dom";
-import { FaSearch, FaShoppingCart } from "react-icons/fa";
-import { useState, useContext } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useState, useContext, useEffect, useRef } from "react";
 import { CartContext } from "../context/CartContext";
 import UserMenu from "./UserMenu";
+import { Search, ShoppingCart, X, Menu, ChevronDown } from "lucide-react";
+
+const SWEETS_SUBCATEGORIES = [
+  { label: "Traditional Sweets",  dbValue: "Traditional Sweets" },
+  { label: "Milk Based Sweets",   dbValue: "Milk Based Sweets" },
+  { label: "Maida Based Pakam",   dbValue: "Maida Based Pakam" },
+  { label: "Dry Fruit Sweets",    dbValue: "Dry Fruit Sweets" },
+  { label: "Bites And Chikkis",   dbValue: "Bites And Chikkis" },
+  { label: "Sugar Free Sweets",   dbValue: "Sugar Free Sweets" },
+  { label: "Other Sweets",        dbValue: "Other Sweets" },
+];
+
+const PICKLES_SUBCATEGORIES = [
+  { label: "Vegetarian Pickles",     dbValue: "Vegatarian Pickles" },
+  { label: "Non Vegetarian Pickles", dbValue: "Non Vegetarian Pickles" },
+];
+
+const NAV_ITEMS = [
+  {
+    label: "SWEETS",
+    to: "/category/sweets",
+    subcategories: SWEETS_SUBCATEGORIES,
+    key: "sweets",
+  },
+  { label: "NAMKEEN",          to: "/category/namkeen",          key: "namkeen" },
+  {
+    label: "PICKLES",
+    to: "/category/pickles",
+    subcategories: PICKLES_SUBCATEGORIES,
+    key: "pickles",
+  },
+  { label: "DAILY ESSENTIALS", to: "/category/daily-essentials", key: "daily-essentials" },
+  { label: "CHILLI POWDERS",   to: "/category/chilli-powders",   key: "chilli-powders" },
+  { label: "GIFT PACKS",       to: "/category/gift-packs",       key: "gift-packs" },
+];
 
 function Header() {
   const { cartItems } = useContext(CartContext);
   const [searchActive, setSearchActive] = useState(false);
-  
+  const [scrolled, setScrolled] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [expandedMobileItem, setExpandedMobileItem] = useState(null);
+  const closeTimer = useRef(null);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const cartItemCount = cartItems?.reduce((total, item) => total + item.quantity, 0) || 0;
 
+  // Add shadow on scroll
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Close search and mobile drawer on route change
+  useEffect(() => {
+    setOpenDropdown(null);
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  // Close search on Escape key
+  useEffect(() => {
+    const handleKey = (e) => { if (e.key === "Escape") setSearchActive(false); };
+    if (searchActive) document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [searchActive]);
+
+  const handleMouseEnter = (key) => {
+    clearTimeout(closeTimer.current);
+    setOpenDropdown(key);
+  };
+
+  const handleMouseLeave = () => {
+    closeTimer.current = setTimeout(() => setOpenDropdown(null), 150);
+  };
+
+  const handleSubcategoryClick = (mainCategory, sub) => {
+    navigate(
+      `/category/${mainCategory}?subcategory=${encodeURIComponent(sub.dbValue)}&label=${encodeURIComponent(sub.label)}`
+    );
+    setOpenDropdown(null);
+    setMobileMenuOpen(false);
+  };
+
+  const isActive = (to) => location.pathname.startsWith(to);
+
   return (
-    <header className="main-header">
+    <header className={`main-header ${scrolled ? "scrolled" : ""}`}>
+      {/* Logo */}
       <div className="logo-section">
         <Link to="/">
-          <img src="/logo.png" alt="Logo" className="site-logo" />
+          <img src="/logo.png" alt="Raviteja Home Foods" className="site-logo" />
         </Link>
       </div>
 
+      {/* Desktop Navigation Links */}
+      <nav className="desktop-nav">
+        {NAV_ITEMS.map((item) =>
+          item.subcategories ? (
+            <div
+              key={item.key}
+              className={`nav-item dropdown ${isActive(item.to) ? "active" : ""}`}
+              onMouseEnter={() => handleMouseEnter(item.key)}
+              onMouseLeave={handleMouseLeave}
+            >
+              <Link to={item.to} className="nav-link">
+                {item.label}
+                <ChevronDown
+                  size={12}
+                  className={`dropdown-arrow ${openDropdown === item.key ? "open" : ""}`}
+                />
+              </Link>
+
+              {openDropdown === item.key && (
+                <div
+                  className="dropdown-menu"
+                  onMouseEnter={() => handleMouseEnter(item.key)}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  <Link
+                    to={item.to}
+                    className="dropdown-item view-all"
+                    onClick={() => setOpenDropdown(null)}
+                  >
+                    View All {item.label.charAt(0) + item.label.slice(1).toLowerCase()}
+                  </Link>
+                  <div className="dropdown-divider" />
+                  {item.subcategories.map((sub) => (
+                    <button
+                      key={sub.dbValue}
+                      className="dropdown-item"
+                      onClick={() => handleSubcategoryClick(item.key, sub)}
+                    >
+                      {sub.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              key={item.key}
+              to={item.to}
+              className={`nav-link ${isActive(item.to) ? "active" : ""}`}
+            >
+              {item.label}
+            </Link>
+          )
+        )}
+      </nav>
+
       {/* Search Overlay */}
       {searchActive && (
-        <div className="search-overlay">
-          <input 
-            type="text" 
-            placeholder="Search for sweets, namkeen, pickles..." 
-            className="search-input"
-            autoFocus
-          />
-          <button onClick={() => setSearchActive(false)}>✕</button>
+        <div className="search-overlay" onClick={(e) => e.target === e.currentTarget && setSearchActive(false)}>
+          <div className="search-box">
+            <Search size={20} strokeWidth={2.2} className="search-icon-inside" />
+            <input
+              type="text"
+              placeholder="Search sweets, namkeen, pickles..."
+              className="search-input"
+              autoFocus
+            />
+            <button className="search-close-btn" onClick={() => setSearchActive(false)}>
+              <X size={18} strokeWidth={2.2} />
+            </button>
+          </div>
         </div>
       )}
 
+      {/* Right Utility Icons */}
       <div className="header-icons">
-        <div className="icon-wrapper search-icon" onClick={() => setSearchActive(true)}>
-          <FaSearch />
+        <button
+          className="icon-wrapper search-icon"
+          onClick={() => setSearchActive(true)}
+          aria-label="Search"
+          title="Search"
+        >
+          <Search size={20} strokeWidth={2.2} />
           <span className="icon-tooltip">Search</span>
-        </div>
-        
-        {/* Replace old login icon with UserMenu */}
+        </button>
+
+        {/* User Menu (login / profile) */}
         <UserMenu />
-        
-        <Link to="/cart" className="icon-wrapper cart-link">
-          <FaShoppingCart />
+
+        {/* Cart */}
+        <Link to="/cart" className="icon-wrapper cart-link" aria-label="Cart" title="Cart">
+          <ShoppingCart size={20} strokeWidth={2.2} />
           {cartItemCount > 0 && (
-            <span className="cart-badge">{cartItemCount}</span>
+            <span className="cart-badge">{cartItemCount > 99 ? "99+" : cartItemCount}</span>
           )}
           <span className="icon-tooltip">Cart</span>
         </Link>
+
+        {/* Hamburger Menu Icon (Mobile Only) */}
+        <button
+          className="icon-wrapper hamburger-menu-btn"
+          onClick={() => setMobileMenuOpen(true)}
+          aria-label="Open Menu"
+          title="Menu"
+        >
+          <Menu size={20} strokeWidth={2.2} />
+        </button>
+      </div>
+
+      {/* Mobile Drawer Navigation overlay */}
+      <div 
+        className={`mobile-menu-drawer-backdrop ${mobileMenuOpen ? "open" : ""}`} 
+        onClick={() => setMobileMenuOpen(false)}
+      >
+        <div 
+          className={`mobile-menu-drawer ${mobileMenuOpen ? "open" : ""}`} 
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="drawer-header">
+            <h3>Menu</h3>
+            <button className="drawer-close-btn" onClick={() => setMobileMenuOpen(false)}>
+              <X size={20} />
+            </button>
+          </div>
+          <div className="drawer-content">
+            <nav className="mobile-nav">
+              {NAV_ITEMS.map((item) => {
+                const hasSub = !!item.subcategories;
+                const isExpanded = expandedMobileItem === item.key;
+                return (
+                  <div key={item.key} className="mobile-nav-item">
+                    <div className="mobile-nav-link-row">
+                      <Link 
+                        to={item.to} 
+                        className={`mobile-nav-link ${isActive(item.to) ? "active" : ""}`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {item.label}
+                      </Link>
+                      {hasSub && (
+                        <button
+                          className="mobile-expand-btn"
+                          onClick={() => setExpandedMobileItem(isExpanded ? null : item.key)}
+                        >
+                          <ChevronDown size={18} className={`expand-chevron ${isExpanded ? "rotated" : ""}`} />
+                        </button>
+                      )}
+                    </div>
+                    {hasSub && isExpanded && (
+                      <div className="mobile-submenu">
+                        <Link
+                          to={item.to}
+                          className="mobile-submenu-item view-all"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          View All {item.label.charAt(0) + item.label.slice(1).toLowerCase()}
+                        </Link>
+                        {item.subcategories.map((sub) => (
+                          <button
+                            key={sub.dbValue}
+                            className="mobile-submenu-item"
+                            onClick={() => handleSubcategoryClick(item.key, sub)}
+                          >
+                            {sub.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
       </div>
     </header>
   );

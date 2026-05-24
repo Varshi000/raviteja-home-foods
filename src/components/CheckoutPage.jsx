@@ -4,11 +4,24 @@ import { CartContext } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import "./CheckoutPage.css";
 import { useNavigate } from "react-router-dom";
+import { fetchCountries, fetchStates } from "../services/api";
+import {
+  Package,
+  ShoppingCart,
+  Lock,
+  AlertTriangle,
+  Tag,
+  CreditCard,
+  MapPin,
+  Truck,
+  BadgePercent,
+  X,
+} from "lucide-react";
 
 const BASE_URL = "http://18.61.65.71:5454";
 
 function CheckoutPage() {
-  const { cartItems, totalPreview, guestId, clearCart, refreshCart } = useContext(CartContext);
+  const { cartItems, subtotal, totalPreview, discountAmount, appliedCoupon, guestId, clearCart, refreshCart, applyCoupon, removeCoupon } = useContext(CartContext);
   const { user, isAuthenticated, token } = useAuth();
   const navigate = useNavigate();
   
@@ -16,18 +29,23 @@ function CheckoutPage() {
   const [shippingLoading, setShippingLoading] = useState(false);
   const [deliveryCharge, setDeliveryCharge] = useState(0);
   const [grandTotal, setGrandTotal] = useState(totalPreview);
+  const [email, setEmail] = useState(user?.email || "");
+  const [formError, setFormError] = useState("");
+  
   const [shippingAddress, setShippingAddress] = useState({
-    email: user?.email || "",
-    mobile: "",
+    name: user?.name || "",
+    mobile: user?.mobile || "",
     address_line: "",
     city: "",
     state: "",
     country: "India",
     pincode: "",
   });
+  
   const [billingSameAsShipping, setBillingSameAsShipping] = useState(true);
+  
   const [billingAddress, setBillingAddress] = useState({
-    email: "",
+    name: "",
     mobile: "",
     address_line: "",
     city: "",
@@ -35,7 +53,102 @@ function CheckoutPage() {
     country: "India",
     pincode: "",
   });
+  
   const [errors, setErrors] = useState({});
+  const [couponInput, setCouponInput] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState("");
+  const [couponSuccess, setCouponSuccess] = useState("");
+  const [countries, setCountries] = useState(["India"]);
+  const [shippingStates, setShippingStates] = useState([]);
+  const [billingStates, setBillingStates] = useState([]);
+  const [shippingStatesLoading, setShippingStatesLoading] = useState(false);
+  const [billingStatesLoading, setBillingStatesLoading] = useState(false);
+
+  // Load countries on mount
+  useEffect(() => {
+    const getCountries = async () => {
+      try {
+        const countryList = await fetchCountries();
+        if (countryList && countryList.length > 0) {
+          setCountries(countryList);
+        }
+      } catch (err) {
+        console.error("Failed to fetch countries:", err);
+      }
+    };
+    getCountries();
+  }, []);
+
+  // Load states when shipping country changes
+  useEffect(() => {
+    const getShippingStates = async () => {
+      if (!shippingAddress.country) {
+        setShippingStates([]);
+        return;
+      }
+      setShippingStatesLoading(true);
+      try {
+        const stateList = await fetchStates(shippingAddress.country);
+        setShippingStates(stateList);
+        // Reset state field if the current selected state is not valid for this country
+        if (stateList.length > 0) {
+          if (!stateList.includes(shippingAddress.state)) {
+            setShippingAddress(prev => ({ ...prev, state: "" }));
+          }
+        } else {
+          setShippingAddress(prev => ({ ...prev, state: "" }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch states for country:", shippingAddress.country, err);
+        setShippingStates([]);
+      } finally {
+        setShippingStatesLoading(false);
+      }
+    };
+    getShippingStates();
+  }, [shippingAddress.country]);
+
+  // Load states when billing country changes
+  useEffect(() => {
+    const getBillingStates = async () => {
+      if (billingSameAsShipping || !billingAddress.country) {
+        setBillingStates([]);
+        return;
+      }
+      setBillingStatesLoading(true);
+      try {
+        const stateList = await fetchStates(billingAddress.country);
+        setBillingStates(stateList);
+        // Reset state field if the current selected state is not valid for this country
+        if (stateList.length > 0) {
+          if (!stateList.includes(billingAddress.state)) {
+            setBillingAddress(prev => ({ ...prev, state: "" }));
+          }
+        } else {
+          setBillingAddress(prev => ({ ...prev, state: "" }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch states for country:", billingAddress.country, err);
+        setBillingStates([]);
+      } finally {
+        setBillingStatesLoading(false);
+      }
+    };
+    getBillingStates();
+  }, [billingAddress.country, billingSameAsShipping]);
+
+  // Sync user details if authenticated
+  useEffect(() => {
+    if (user) {
+      setEmail(prev => prev || user.email || "");
+      setShippingAddress(prev => ({
+        ...prev,
+        name: prev.name || user.name || "",
+        mobile: prev.mobile || user.mobile || "",
+      }));
+    }
+  }, [user]);
 
   // Get auth headers
   const getAuthHeaders = () => {
@@ -50,12 +163,29 @@ function CheckoutPage() {
   const validateForm = () => {
     const newErrors = {};
     
-    if (!shippingAddress.email.trim()) newErrors.email = "email is required";
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = "Valid email is required";
+    }
+    
+    if (!shippingAddress.name.trim()) newErrors.name = "Full name is required";
     if (!shippingAddress.mobile.match(/^[0-9]{10}$/)) newErrors.mobile = "Valid 10-digit mobile number required";
+    if (!shippingAddress.country.trim()) newErrors.country = "Country is required";
+    if (!shippingAddress.state.trim()) newErrors.state = "State is required";
     if (!shippingAddress.address_line.trim()) newErrors.address_line = "Address is required";
     if (!shippingAddress.city.trim()) newErrors.city = "City is required";
-    if (!shippingAddress.state.trim()) newErrors.state = "State is required";
     if (!shippingAddress.pincode.match(/^[0-9]{6}$/)) newErrors.pincode = "Valid 6-digit pincode required";
+    
+    if (!billingSameAsShipping) {
+      if (!billingAddress.name.trim()) newErrors.billing_name = "Full name is required";
+      if (!billingAddress.mobile.match(/^[0-9]{10}$/)) newErrors.billing_mobile = "Valid 10-digit mobile number required";
+      if (!billingAddress.country.trim()) newErrors.billing_country = "Country is required";
+      if (!billingAddress.state.trim()) newErrors.billing_state = "State is required";
+      if (!billingAddress.address_line.trim()) newErrors.billing_address_line = "Address is required";
+      if (!billingAddress.city.trim()) newErrors.billing_city = "City is required";
+      if (!billingAddress.pincode.match(/^[0-9]{6}$/)) newErrors.billing_pincode = "Valid 6-digit pincode required";
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -109,9 +239,10 @@ function CheckoutPage() {
   // Place order
   const placeOrder = async () => {
     const orderData = {
-      email: user?.email || "guest@example.com",
+      email: email,
       shipping_address: shippingAddress,
       billing_address: billingSameAsShipping ? shippingAddress : billingAddress,
+      coupon_code: appliedCoupon || null,
       guest_id: guestId,
     };
     
@@ -185,6 +316,7 @@ function CheckoutPage() {
     }
     
     setLoading(true);
+    setFormError("");
     
     try {
       // Step 1: Place order via backend
@@ -207,7 +339,7 @@ function CheckoutPage() {
         order_id: order.razorpay_order_id,
         prefill: {
           name: shippingAddress.name,
-          email: user?.email || "",
+          email: email,
           contact: shippingAddress.mobile,
         },
         notes: {
@@ -227,14 +359,16 @@ function CheckoutPage() {
             if (verifyResult.status === "success") {
               await clearCart();
               navigate("/order-success", { 
-                state: { orderId: verifyResult.order_id || order.razorpay_order_id } 
+                state: { orderId: verifyResult.custom_order_id || verifyResult.order_id || order.razorpay_order_id } 
               });
             } else {
-              alert("Payment verification failed. Please contact support.");
+              setFormError("Payment verification failed. Please contact support.");
+              setLoading(false);
             }
           } catch (err) {
             console.error("Payment verification error:", err);
-            alert("Payment verification failed. Please contact support.");
+            setFormError(err.message || "Payment verification failed. Please contact support.");
+            setLoading(false);
           }
         },
         modal: {
@@ -249,7 +383,7 @@ function CheckoutPage() {
       
     } catch (err) {
       console.error("Order placement error:", err);
-      alert(err.message || "Failed to place order. Please try again.");
+      setFormError(err.message || "Failed to place order. Please try again.");
       setLoading(false);
     }
   };
@@ -258,6 +392,53 @@ function CheckoutPage() {
     const { name, value } = e.target;
     setShippingAddress(prev => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
+  };
+
+  const handleBillingChange = (e) => {
+    const { name, value } = e.target;
+    setBillingAddress(prev => ({ ...prev, [name]: value }));
+    if (errors[`billing_${name}`]) setErrors(prev => ({ ...prev, [`billing_${name}`]: "" }));
+  };
+
+  const handleApplyCoupon = async () => {
+    setCouponError("");
+    setCouponSuccess("");
+    if (!couponInput.trim()) {
+      setCouponError("Please enter a coupon code");
+      return;
+    }
+    
+    setCouponLoading(true);
+    try {
+      const result = await applyCoupon(couponInput.trim());
+      if (result && result.success) {
+        setCouponSuccess(result.message || "Coupon applied successfully!");
+        setCouponInput("");
+      } else {
+        setCouponError(result?.message || "Invalid coupon code");
+      }
+    } catch (err) {
+      console.error(err);
+      setCouponError("Failed to apply coupon");
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = async () => {
+    setCouponError("");
+    setCouponSuccess("");
+    try {
+      const result = await removeCoupon();
+      if (result && result.success) {
+        setCouponSuccess("Coupon removed");
+      } else {
+        setCouponError(result?.message || "Failed to remove coupon");
+      }
+    } catch (err) {
+      console.error(err);
+      setCouponError("Failed to remove coupon");
+    }
   };
 
   if (cartItems.length === 0) {
@@ -280,19 +461,35 @@ function CheckoutPage() {
         <div className="checkout-container">
           {/* LEFT: Shipping Form */}
           <div className="checkout-form-section">
-            <h2>Shipping Information</h2>
+            <h2><Package size={20} /> Shipping Information</h2>
             
             <form onSubmit={handlePayment} className="checkout-form">
+              <div className="form-group">
+                <label>Email Address *</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (errors.email) setErrors(prev => ({ ...prev, email: "" }));
+                  }}
+                  placeholder="john.doe@example.com"
+                  className={`form-input ${errors.email ? "error" : ""}`}
+                />
+                {errors.email && <span className="error-text">{errors.email}</span>}
+              </div>
+
               <div className="form-row">
                 <div className="form-group">
-                  <label>Email *</label>
+                  <label>Full Name *</label>
                   <input
-                    type="email"
-                    name="email"
-                    value={shippingAddress.email}
+                    type="text"
+                    name="name"
+                    value={shippingAddress.name}
                     onChange={handleShippingChange}
-                    placeholder="john.doe@example.com"
-                    className={`form-input ${errors.email ? "error" : ""}`}
+                    placeholder="John Doe"
+                    className={`form-input ${errors.name ? "error" : ""}`}
                   />
                   {errors.name && <span className="error-text">{errors.name}</span>}
                 </div>
@@ -308,6 +505,41 @@ function CheckoutPage() {
                     className={`form-input ${errors.mobile ? "error" : ""}`}
                   />
                   {errors.mobile && <span className="error-text">{errors.mobile}</span>}
+                </div>
+              </div>
+
+              <div className="form-row" style={{ contentVisibility: "auto" }}>
+                <div className="form-group">
+                  <label>Country *</label>
+                  <select
+                    name="country"
+                    value={shippingAddress.country}
+                    onChange={handleShippingChange}
+                    className={`form-input ${errors.country ? "error" : ""}`}
+                  >
+                    <option value="">Select Country</option>
+                    {countries.map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                  {errors.country && <span className="error-text">{errors.country}</span>}
+                </div>
+
+                <div className="form-group">
+                  <label>State *</label>
+                  <select
+                    name="state"
+                    value={shippingAddress.state}
+                    onChange={handleShippingChange}
+                    className={`form-input ${errors.state ? "error" : ""}`}
+                    disabled={shippingStatesLoading || shippingStates.length === 0}
+                  >
+                    <option value="">{shippingStatesLoading ? "Loading States..." : "Select State"}</option>
+                    {shippingStates.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                  {errors.state && <span className="error-text">{errors.state}</span>}
                 </div>
               </div>
 
@@ -339,21 +571,6 @@ function CheckoutPage() {
                 </div>
                 
                 <div className="form-group">
-                  <label>State *</label>
-                  <input
-                    type="text"
-                    name="state"
-                    value={shippingAddress.state}
-                    onChange={handleShippingChange}
-                    placeholder="Telangana"
-                    className={`form-input ${errors.state ? "error" : ""}`}
-                  />
-                  {errors.state && <span className="error-text">{errors.state}</span>}
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
                   <label>Pincode *</label>
                   <input
                     type="text"
@@ -365,19 +582,6 @@ function CheckoutPage() {
                     className={`form-input ${errors.pincode ? "error" : ""}`}
                   />
                   {errors.pincode && <span className="error-text">{errors.pincode}</span>}
-                </div>
-                
-                <div className="form-group">
-                  <label>Country</label>
-                  <input
-                    type="text"
-                    name="country"
-                    value={shippingAddress.country}
-                    onChange={handleShippingChange}
-                    placeholder="India"
-                    className="form-input"
-                    disabled
-                  />
                 </div>
               </div>
 
@@ -392,15 +596,136 @@ function CheckoutPage() {
                 </label>
               </div>
 
+              {!billingSameAsShipping && (
+                <div className="billing-section" style={{ contentVisibility: "auto" }}>
+                  <h3>Billing Information</h3>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Full Name *</label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={billingAddress.name}
+                        onChange={handleBillingChange}
+                        placeholder="John Doe"
+                        className={`form-input ${errors.billing_name ? "error" : ""}`}
+                      />
+                      {errors.billing_name && <span className="error-text">{errors.billing_name}</span>}
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>Phone Number *</label>
+                      <input
+                        type="tel"
+                        name="mobile"
+                        value={billingAddress.mobile}
+                        onChange={handleBillingChange}
+                        placeholder="9876543210"
+                        className={`form-input ${errors.billing_mobile ? "error" : ""}`}
+                      />
+                      {errors.billing_mobile && <span className="error-text">{errors.billing_mobile}</span>}
+                    </div>
+                  </div>
+
+                  <div className="form-row" style={{ contentVisibility: "auto" }}>
+                    <div className="form-group">
+                      <label>Country *</label>
+                      <select
+                        name="country"
+                        value={billingAddress.country}
+                        onChange={handleBillingChange}
+                        className={`form-input ${errors.billing_country ? "error" : ""}`}
+                      >
+                        <option value="">Select Country</option>
+                        {countries.map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                      {errors.billing_country && <span className="error-text">{errors.billing_country}</span>}
+                    </div>
+
+                    <div className="form-group">
+                      <label>State *</label>
+                      <select
+                        name="state"
+                        value={billingAddress.state}
+                        onChange={handleBillingChange}
+                        className={`form-input ${errors.billing_state ? "error" : ""}`}
+                        disabled={billingStatesLoading || billingStates.length === 0}
+                      >
+                        <option value="">{billingStatesLoading ? "Loading States..." : "Select State"}</option>
+                        {billingStates.map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                      {errors.billing_state && <span className="error-text">{errors.billing_state}</span>}
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Address *</label>
+                    <textarea
+                      name="address_line"
+                      value={billingAddress.address_line}
+                      onChange={handleBillingChange}
+                      placeholder="House No, Street, Landmark"
+                      className={`form-input ${errors.billing_address_line ? "error" : ""}`}
+                      rows="2"
+                    />
+                    {errors.billing_address_line && <span className="error-text">{errors.billing_address_line}</span>}
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>City *</label>
+                      <input
+                        type="text"
+                        name="city"
+                        value={billingAddress.city}
+                        onChange={handleBillingChange}
+                        placeholder="Hyderabad"
+                        className={`form-input ${errors.billing_city ? "error" : ""}`}
+                      />
+                      {errors.billing_city && <span className="error-text">{errors.billing_city}</span>}
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>Pincode *</label>
+                      <input
+                        type="text"
+                        name="pincode"
+                        value={billingAddress.pincode}
+                        onChange={handleBillingChange}
+                        placeholder="500001"
+                        maxLength="6"
+                        className={`form-input ${errors.billing_pincode ? "error" : ""}`}
+                      />
+                      {errors.billing_pincode && <span className="error-text">{errors.billing_pincode}</span>}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {formError && (
+                <div className="form-error-banner">
+                  <span className="error-icon"><AlertTriangle size={18} /></span>
+                  <span className="error-message-text">{formError}</span>
+                </div>
+              )}
+
               <button type="submit" className="btn-primary pay-btn" disabled={loading}>
-                {loading ? "Processing..." : `Pay ₹${grandTotal}`}
+                {loading ? (
+                  <><span className="pay-spinner" /> Processing...</>
+                ) : (
+                  <><Lock size={16} /> Pay ₹{grandTotal} Securely</>
+                )}
               </button>
             </form>
           </div>
 
           {/* RIGHT: Order Summary */}
           <div className="checkout-summary-section">
-            <h2>Order Summary</h2>
+            <h2><ShoppingCart size={20} /> Order Summary</h2>
             
             <div className="summary-items">
               {cartItems.map((item, index) => (
@@ -416,15 +741,58 @@ function CheckoutPage() {
               ))}
             </div>
             
+            {/* Coupon Code Block */}
+            <div className="checkout-coupon-section" style={{ contentVisibility: "auto" }}>
+              {appliedCoupon ? (
+                <div className="applied-coupon-info">
+                  <span className="coupon-tag"><Tag size={14} /> {appliedCoupon.toUpperCase()}</span>
+                  <button 
+                    type="button" 
+                    className="btn-remove-coupon" 
+                    onClick={handleRemoveCoupon}
+                  >
+                    <X size={13} /> Remove
+                  </button>
+                </div>
+              ) : (
+                <div className="coupon-input-group">
+                  <input 
+                    type="text" 
+                    placeholder="Enter Coupon Code" 
+                    value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value)}
+                    className="form-input coupon-input"
+                  />
+                  <button 
+                    type="button" 
+                    className="btn-apply-coupon" 
+                    onClick={handleApplyCoupon}
+                    disabled={couponLoading}
+                  >
+                    {couponLoading ? "Applying..." : "Apply"}
+                  </button>
+                </div>
+              )}
+              {couponError && <span className="coupon-error-text">{couponError}</span>}
+              {couponSuccess && <span className="coupon-success-text">{couponSuccess}</span>}
+            </div>
+
             <hr />
             
             <div className="summary-row">
               <span>Subtotal</span>
-              <span>₹{totalPreview}</span>
+              <span>₹{subtotal}</span>
             </div>
+
+            {discountAmount > 0 && (
+              <div className="summary-row discount">
+                <span>Discount {appliedCoupon && `(${appliedCoupon})`}</span>
+                <span>- ₹{discountAmount}</span>
+              </div>
+            )}
             
             <div className="summary-row">
-              <span>Delivery Charges</span>
+              <span className="summary-row-icon"><Truck size={14} /> Delivery Charges</span>
               <span>{shippingLoading ? "Calculating..." : `₹${deliveryCharge}`}</span>
             </div>
             
@@ -432,11 +800,11 @@ function CheckoutPage() {
             
             <div className="summary-total">
               <span>Total to Pay:</span>
-              <span>₹{grandTotal}</span>
+              <span>₹{totalPreview + deliveryCharge}</span>
             </div>
             
             <p className="shipping-note">
-              * Free delivery on orders above ₹499
+              <Truck size={13} /> Free delivery on orders above ₹499
             </p>
           </div>
         </div>

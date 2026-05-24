@@ -126,38 +126,16 @@ function CartProvider({ children }) {
     }
   };
 
-  // Update quantity - using add-bulk with updated quantity
+  // Update quantity - using PUT /cart/update
   const updateQuantity = async (productId, weight, newQuantity) => {
     if (newQuantity < 0) return;
     
     setCartLoading(true);
     try {
-      // Find the existing item to get its details
-      const existingItem = cartItems.find(
-        item => item.product_id === productId && item.weight === weight
-      );
-      
-      if (!existingItem) return;
-      
-      if (newQuantity === 0) {
-        // Remove item - we'll just reload the cart
-        await loadCart();
-        return;
-      }
-      
-      // Create updated item
-      const items = [{
-        product_id: productId,
-        product_name: existingItem.product_name,
-        image_url: existingItem.image_url,
-        weight: weight,
-        price: existingItem.price,
-        quantity: newQuantity,
-        business_type: "retail"
-      }];
-      
       const payload = {
-        items: items,
+        product_id: productId,
+        weight: weight,
+        quantity: newQuantity,
         guest_id: isAuthenticated ? undefined : guestId,
       };
       
@@ -166,11 +144,16 @@ function CartProvider({ children }) {
         ...getAuthHeaders(),
       };
       
-      await fetch(`${BASE_URL}/cart/add-bulk`, {
-        method: "POST",
+      const response = await fetch(`${BASE_URL}/cart/update`, {
+        method: "PUT",
         headers,
         body: JSON.stringify(payload),
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || "Failed to update quantity");
+      }
       
       await loadCart();
     } catch (err) {
@@ -182,57 +165,7 @@ function CartProvider({ children }) {
 
   // Remove item
   const removeFromCart = async (productId, weight) => {
-    // Since we can't delete directly, we'll clear and re-add all except this one
-    setCartLoading(true);
-    try {
-      const itemsToKeep = cartItems.filter(
-        item => !(item.product_id === productId && item.weight === weight)
-      );
-      
-      const payload = {
-        items: itemsToKeep.map(item => ({
-          product_id: item.product_id,
-          product_name: item.product_name,
-          image_url: item.image_url,
-          weight: item.weight,
-          price: item.price,
-          quantity: item.quantity,
-          business_type: "retail"
-        })),
-        guest_id: isAuthenticated ? undefined : guestId,
-      };
-      
-      const headers = {
-        "Content-Type": "application/json",
-        ...getAuthHeaders(),
-      };
-      
-      // First clear the cart
-      let clearUrl;
-      if (isAuthenticated && user?.email) {
-        clearUrl = `${BASE_URL}/cart/clear?user_email=${user.email}`;
-      } else {
-        clearUrl = `${BASE_URL}/cart/clear?guest_id=${guestId}`;
-      }
-      
-      await fetch(clearUrl, { method: "DELETE", headers });
-      
-      // Then add back the items we want to keep
-      if (itemsToKeep.length > 0) {
-        await fetch(`${BASE_URL}/cart/add-bulk`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify(payload),
-        });
-      }
-      
-      await loadCart();
-    } catch (err) {
-      console.error("Failed to remove from cart:", err);
-      await loadCart();
-    } finally {
-      setCartLoading(false);
-    }
+    await updateQuantity(productId, weight, 0);
   };
 
   // Clear entire cart

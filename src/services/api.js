@@ -307,3 +307,34 @@ export const getDashboardStats = async () => {
   const response = await fetch(`${BASE_URL}/dashboard/overview`, { headers });
   return handleResponse(response);
 };
+
+// ==================== SHIPPING API ====================
+
+export const estimateShipping = async (country, state, pincode, cartWeightGrams, orderTotal) => {
+  const response = await fetch(`${BASE_URL}/shipping/estimate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      country,
+      state,
+      zipcode: parseInt(pincode),
+      cart_weight_grams: cartWeightGrams,
+      order_total: orderTotal,
+    }),
+  });
+  return handleResponse(response);
+};
+
+export const fetchCountries = async () => {
+  const response = await fetch(`${BASE_URL}/shipping/countries`);
+  const data = await handleResponse(response);
+  return data.countries || [];
+};
+
+export const fetchStates = async (country) => {
+  const response = await fetch(`${BASE_URL}/shipping/countries/${encodeURIComponent(country)}/states`);
+  const data = await handleResponse(response);
+  return data.states || [];
+};
