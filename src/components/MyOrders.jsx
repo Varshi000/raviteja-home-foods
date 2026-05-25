@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getGuestOrders } from "../services/api";
+import { getGuestOrders, createReview } from "../services/api";
 import "./MyOrders.css";
 
 function MyOrders() {
@@ -14,6 +14,20 @@ function MyOrders() {
   const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [filter, setFilter] = useState("all");
+  
+  // Review form state
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewItem, setReviewItem] = useState(null);
+  const [reviewOrder, setReviewOrder] = useState(null);
+  const [rating, setRating] = useState(5);
+  const [reviewTitle, setReviewTitle] = useState("");
+  const [reviewContent, setReviewContent] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [emailAddress, setEmailAddress] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewSuccess, setReviewSuccess] = useState(null);
+  const [reviewError, setReviewError] = useState(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -89,6 +103,86 @@ function MyOrders() {
       currency: "INR",
       minimumFractionDigits: 0,
     }).format(amount);
+  };
+
+  const handleOpenReviewModal = (item, order) => {
+    setReviewItem(item);
+    setReviewOrder(order);
+    setRating(5);
+    setReviewTitle("");
+    setReviewContent("");
+    setDisplayName(order.shipping_address?.name || user?.name || "");
+    setEmailAddress(order.user_email || user?.email || "");
+    setMobileNumber(order.shipping_address?.mobile || user?.mobile || "");
+    setReviewSuccess(null);
+    setReviewError(null);
+    setShowReviewModal(true);
+  };
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!reviewItem) return;
+
+    if (!rating) {
+      setReviewError("Please select a rating.");
+      return;
+    }
+    if (!reviewTitle.trim()) {
+      setReviewError("Please enter a review title.");
+      return;
+    }
+    if (!reviewContent.trim()) {
+      setReviewError("Please write some review content.");
+      return;
+    }
+    if (!displayName.trim()) {
+      setReviewError("Please enter your display name.");
+      return;
+    }
+    if (!emailAddress.trim()) {
+      setReviewError("Please enter your email address.");
+      return;
+    }
+    if (!mobileNumber.trim()) {
+      setReviewError("Please enter your mobile number.");
+      return;
+    }
+
+    setReviewLoading(true);
+    setReviewError(null);
+    setReviewSuccess(null);
+
+    try {
+      const formData = new FormData();
+      const prodId = reviewItem.product_id || reviewItem.id;
+      if (!prodId) {
+        throw new Error("Product identifier is missing on the order item.");
+      }
+      formData.append("product_id", prodId);
+      formData.append("rating", rating);
+      formData.append("review_title", reviewTitle);
+      formData.append("review_content", reviewContent);
+      formData.append("display_name", displayName);
+      formData.append("email_address", emailAddress);
+      formData.append("mobile_number", mobileNumber);
+
+      const response = await createReview(formData);
+      if (response && response.message) {
+        setReviewSuccess("Review submitted successfully! Thank you for your feedback.");
+        setTimeout(() => {
+          setShowReviewModal(false);
+          setReviewItem(null);
+          setReviewOrder(null);
+        }, 2000);
+      } else {
+        throw new Error("Invalid response from server.");
+      }
+    } catch (err) {
+      console.error("Failed to submit review:", err);
+      setReviewError(err.message || "Failed to submit review. Please try again.");
+    } finally {
+      setReviewLoading(false);
+    }
   };
 
   const getFilteredOrders = () => {
@@ -272,6 +366,14 @@ function MyOrders() {
                             <div className="item-qty">x{item.quantity}</div>
                             <div className="item-price">{formatCurrency(item.price)}</div>
                             <div className="item-total">{formatCurrency(item.price * item.quantity)}</div>
+                            <div className="item-action">
+                              <button 
+                                className="write-review-btn"
+                                onClick={() => handleOpenReviewModal(item, order)}
+                              >
+                                Write Review
+                              </button>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -363,6 +465,139 @@ function MyOrders() {
           </div>
         )}
       </div>
+
+      {/* Review Modal */}
+      {showReviewModal && reviewItem && (
+        <div className="modal-overlay" onClick={() => setShowReviewModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Write a Review</h2>
+              <button className="close-modal" onClick={() => setShowReviewModal(false)}>✕</button>
+            </div>
+            <form onSubmit={handleSubmitReview}>
+              <div className="modal-body">
+                {reviewSuccess && (
+                  <div className="review-message success">
+                    {reviewSuccess}
+                  </div>
+                )}
+                {reviewError && (
+                  <div className="review-message error">
+                    ⚠️ {reviewError}
+                  </div>
+                )}
+                
+                <div className="product-review-header">
+                  <img src={reviewItem.image_url} alt={reviewItem.product_name} />
+                  <div>
+                    <h3>{reviewItem.product_name}</h3>
+                    <span>Weight: {reviewItem.weight}</span>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Overall Rating</label>
+                  <div className="star-rating">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        type="button"
+                        key={star}
+                        className={`star-btn ${star <= rating ? "selected" : ""}`}
+                        onClick={() => setRating(star)}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="reviewTitle">Review Title</label>
+                  <input
+                    type="text"
+                    id="reviewTitle"
+                    className="form-input"
+                    placeholder="e.g. Delicious Taste, Highly Recommend!"
+                    value={reviewTitle}
+                    onChange={(e) => setReviewTitle(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="reviewContent">Review Details</label>
+                  <textarea
+                    id="reviewContent"
+                    className="form-input"
+                    rows="4"
+                    placeholder="Tell us what you liked or disliked about this food..."
+                    value={reviewContent}
+                    onChange={(e) => setReviewContent(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="displayName">Your Name</label>
+                  <input
+                    type="text"
+                    id="displayName"
+                    className="form-input"
+                    placeholder="e.g. John Doe"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group text-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                    <label htmlFor="emailAddress">Email Address</label>
+                    <input
+                      type="email"
+                      id="emailAddress"
+                      className="form-input"
+                      placeholder="e.g. john@example.com"
+                      value={emailAddress}
+                      onChange={(e) => setEmailAddress(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="mobileNumber">Mobile Number</label>
+                    <input
+                      type="tel"
+                      id="mobileNumber"
+                      className="form-input"
+                      placeholder="e.g. 9876543210"
+                      value={mobileNumber}
+                      onChange={(e) => setMobileNumber(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button 
+                  type="button" 
+                  className="btn-secondary" 
+                  onClick={() => setShowReviewModal(false)}
+                  disabled={reviewLoading}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn-primary" 
+                  disabled={reviewLoading}
+                >
+                  {reviewLoading ? "Submitting..." : "Submit Review"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

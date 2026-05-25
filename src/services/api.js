@@ -44,6 +44,12 @@ export const fetchCategories = async () => {
   return Array.isArray(data) ? data : [];
 };
 
+export const fetchCategoriesWithSubcategories = async () => {
+  const response = await fetch(`${BASE_URL}/categories/with_subcategories`);
+  const data = await handleResponse(response);
+  return data;
+};
+
 // ==================== CART API ====================
 
 export const getCart = async (guestId, userEmail = null) => {
@@ -398,5 +404,20 @@ export const addShippingZone = async (adminId, country, stateName, zoneData) => 
       },
     }),
   });
+  return handleResponse(response);
+};
+
+// ==================== REVIEWS API ====================
+
+export const createReview = async (reviewFormData) => {
+  const response = await fetch(`${BASE_URL}/reviews/create_review`, {
+    method: "POST",
+    body: reviewFormData, // Sent as FormData
+  });
+  return handleResponse(response);
+};
+
+export const fetchProductReviews = async (productId) => {
+  const response = await fetch(`${BASE_URL}/reviews/product/${productId}`);
   return handleResponse(response);
 };

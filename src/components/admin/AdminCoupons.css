@@ -1,0 +1,529 @@
+/* src/components/admin/AdminCoupons.css */
+
+.admin-main-content {
+  padding: 28px 32px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+}
+
+/* Header Section */
+.coupons-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.coupons-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 6px;
+}
+
+.coupons-header p {
+  font-size: 14px;
+  color: #6c757d;
+  margin: 0;
+}
+
+.add-coupon-btn {
+  background: #7b1113;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.add-coupon-btn:hover {
+  background: #9a1518;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(123, 17, 19, 0.3);
+}
+
+/* Search Bar */
+.coupons-search {
+  margin-bottom: 28px;
+}
+
+.coupons-search .search-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 12px 16px;
+  border: 1.5px solid #eef2f6;
+  border-radius: 12px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.coupons-search .search-input:focus {
+  outline: none;
+  border-color: #7b1113;
+  box-shadow: 0 0 0 3px rgba(123, 17, 19, 0.1);
+}
+
+/* Coupons Table Grid */
+.coupons-table-wrapper {
+  background: white;
+  border-radius: 20px;
+  border: 1px solid #eef2f6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow-x: auto;
+  width: 100%;
+}
+
+.coupons-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+  min-width: 800px;
+}
+
+.coupons-table th {
+  background: #fafbfc;
+  padding: 16px 20px;
+  font-weight: 600;
+  color: #6c757d;
+  border-bottom: 1px solid #eef2f6;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.coupons-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid #eef2f6;
+  color: #1a1a2e;
+  vertical-align: middle;
+}
+
+.coupons-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.coupons-table tbody tr:hover td {
+  background-color: #fafbfc;
+}
+
+/* Cells Styling */
+.coupon-code-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: #7b1113;
+}
+
+.ticket-icon {
+  color: #7b1113;
+  font-size: 16px;
+}
+
+.type-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.type-badge.percentage {
+  background: rgba(123, 17, 19, 0.08);
+  color: #7b1113;
+}
+
+.type-badge.fixed {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.expiry-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #6c757d;
+  font-size: 13px;
+}
+
+.no-expiry {
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* Status Button Toggle */
+.status-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.status-toggle-btn.active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-toggle-btn.active:hover {
+  background: #a7f3d0;
+}
+
+.status-toggle-btn.inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-toggle-btn.inactive:hover {
+  background: #fecaca;
+}
+
+/* Action Buttons */
+.actions-cell {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-btn, .delete-btn {
+  background: #f0f2f5;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.edit-btn {
+  color: #4b5563;
+}
+
+.edit-btn:hover {
+  background: #7b1113;
+  color: white;
+  transform: scale(1.05);
+}
+
+.delete-btn {
+  color: #dc2626;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+  color: white;
+  transform: scale(1.05);
+}
+
+.no-data-cell {
+  text-align: center;
+  color: #94a3b8;
+  padding: 40px !important;
+  font-style: italic;
+}
+
+/* Alerts */
+.success-alert, .error-alert {
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  animation: fadeIn 0.3s ease;
+}
+
+.success-alert {
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  color: #2e7d32;
+}
+
+.error-alert {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+}
+
+.success-alert button, .error-alert button {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: inherit;
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 24px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.3s ease;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #eef2f6;
+  background: #fafbfc;
+  border-radius: 24px 24px 0 0;
+}
+
+.modal-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.close-modal {
+  background: #f0f2f5;
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  color: #6c757d;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-modal:hover {
+  background: #7b1113;
+  color: white;
+  transform: rotate(90deg);
+}
+
+/* Form Styles */
+form {
+  padding: 24px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.checkbox-group {
+  grid-column: span 2;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #7b1113;
+}
+
+.form-input {
+  padding: 12px 16px;
+  border: 1.5px solid #eef2f6;
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  background: white;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #7b1113;
+  box-shadow: 0 0 0 3px rgba(123, 17, 19, 0.1);
+}
+
+.form-input:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+  color: #9ca3af;
+}
+
+select.form-input {
+  cursor: pointer;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn-secondary {
+  background: #f0f2f5;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #495057;
+}
+
+.btn-secondary:hover {
+  background: #e2e6ea;
+}
+
+.btn-primary {
+  background: #7b1113;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #9a1518;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(123, 17, 19, 0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Spinner & Animations */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px;
+  gap: 16px;
+  background: white;
+  border-radius: 20px;
+  border: 1px solid #eef2f6;
+}
+
+.spinner {
+  width: 45px;
+  height: 45px;
+  border: 3px solid #eef2f6;
+  border-top-color: #7b1113;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .admin-main-content {
+    padding: 20px 16px;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-group.checkbox-group {
+    grid-column: span 1;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .modal-actions button {
+    width: 100%;
+  }
+}

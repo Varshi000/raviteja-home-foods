@@ -5,6 +5,7 @@ import { useState, useContext, useEffect, useRef } from "react";
 import { CartContext } from "../context/CartContext";
 import UserMenu from "./UserMenu";
 import { Search, ShoppingCart, X, Menu, ChevronDown } from "lucide-react";
+import { fetchCategoriesWithSubcategories } from "../services/api";
 
 const SWEETS_SUBCATEGORIES = [
   { label: "Traditional Sweets",  dbValue: "Traditional Sweets" },
@@ -21,7 +22,7 @@ const PICKLES_SUBCATEGORIES = [
   { label: "Non Vegetarian Pickles", dbValue: "Non Vegetarian Pickles" },
 ];
 
-const NAV_ITEMS = [
+const FALLBACK_NAV_ITEMS = [
   {
     label: "SWEETS",
     to: "/category/sweets",
@@ -47,6 +48,7 @@ function Header() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedMobileItem, setExpandedMobileItem] = useState(null);
+  const [navItems, setNavItems] = useState(FALLBACK_NAV_ITEMS);
   const closeTimer = useRef(null);
 
   const navigate = useNavigate();
@@ -59,6 +61,35 @@ function Header() {
     const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Fetch categories with subcategories from the endpoint
+  useEffect(() => {
+    const loadHeaderCategories = async () => {
+      try {
+        const response = await fetchCategoriesWithSubcategories();
+        if (response && Array.isArray(response.data) && response.data.length > 0) {
+          const mapped = response.data.map((cat) => {
+            const slug = cat.name.toLowerCase().trim().replace(/\s+/g, "-");
+            return {
+              label: cat.name.toUpperCase(),
+              to: `/category/${slug}`,
+              key: slug,
+              subcategories: cat.subcategory && Array.isArray(cat.subcategory) && cat.subcategory.length > 0
+                ? cat.subcategory.map((sub) => ({
+                    label: sub.name,
+                    dbValue: sub.name,
+                  }))
+                : null,
+            };
+          });
+          setNavItems(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to load header categories:", err);
+      }
+    };
+    loadHeaderCategories();
   }, []);
 
   // Close search and mobile drawer on route change
@@ -104,8 +135,8 @@ function Header() {
 
       {/* Desktop Navigation Links */}
       <nav className="desktop-nav">
-        {NAV_ITEMS.map((item) =>
-          item.subcategories ? (
+        {navItems.map((item) =>
+          item.subcategories && item.subcategories.length > 0 ? (
             <div
               key={item.key}
               className={`nav-item dropdown ${isActive(item.to) ? "active" : ""}`}
@@ -228,8 +259,8 @@ function Header() {
           </div>
           <div className="drawer-content">
             <nav className="mobile-nav">
-              {NAV_ITEMS.map((item) => {
-                const hasSub = !!item.subcategories;
+              {navItems.map((item) => {
+                const hasSub = item.subcategories && item.subcategories.length > 0;
                 const isExpanded = expandedMobileItem === item.key;
                 return (
                   <div key={item.key} className="mobile-nav-item">

@@ -118,6 +118,32 @@
   font-size: 14px;
 }
 
+/* Business Type Badge */
+.business-type-badge-wrapper {
+  margin-bottom: 14px;
+}
+
+.business-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  background: rgba(123, 17, 19, 0.08);
+  color: var(--primary-color);
+  border: 1px solid rgba(123, 17, 19, 0.2);
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.business-type-badge:hover {
+  background: rgba(123, 17, 19, 0.14);
+  transform: scale(1.03);
+}
+
+
 .product-price {
   margin-bottom: 24px;
 }

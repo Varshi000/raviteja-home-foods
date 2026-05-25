@@ -1,5 +1,5 @@
 // src/components/UserMenu.jsx
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -17,49 +17,49 @@ import "./UserMenu.css";
 
 function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
   const { user, logout, isAdmin, isAuthenticated } = useAuth();
-  const menuRef = useRef(null);
+  const btnRef = useRef(null);
   const navigate = useNavigate();
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const closeMenu = useCallback(() => setIsOpen(false), []);
+
+  const toggleMenu = () => {
+    if (isOpen) { setIsOpen(false); return; }
+    const rect = btnRef.current?.getBoundingClientRect();
+    if (rect) {
+      setDropdownPos({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      });
+    }
+    setIsOpen(true);
+  };
 
   const handleLogout = () => {
     logout();
-    setIsOpen(false);
+    closeMenu();
     navigate("/");
   };
 
   const handleLogin = () => {
-    setIsOpen(false);
+    closeMenu();
     navigate("/login");
   };
 
-  // Get user initials for avatar
   const getUserInitials = () => {
     if (!user?.name) return "U";
     return user.name.charAt(0).toUpperCase();
   };
 
-  // Check if user is admin (isAdmin is a boolean from AuthContext)
   const userIsAdmin = isAdmin === true;
 
-  // Regular user menu items
   const userMenuItems = [
     { icon: <ShoppingBag size={16} />, label: "My Orders", path: "/my-orders" },
     { icon: <Heart size={16} />, label: "Wishlist", path: "/wishlist" },
     { icon: <MapPin size={16} />, label: "Addresses", path: "/addresses" },
   ];
 
-  // Admin menu items (extra)
   const adminMenuItems = [
     { icon: <LayoutDashboard size={16} />, label: "Admin Dashboard", path: "/admin/dashboard" },
     { icon: <Boxes size={16} />, label: "Manage Products", path: "/admin/products" },
@@ -70,22 +70,43 @@ function UserMenu() {
   const menuItems = userIsAdmin ? [...adminMenuItems, ...userMenuItems] : userMenuItems;
 
   return (
-    <div className="user-menu-container" ref={menuRef}>
-      <button 
-        className="icon-wrapper user-menu-button" 
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label="Account"
-      >
-        {isAuthenticated ? (
-          <div className="user-avatar">{getUserInitials()}</div>
-        ) : (
-          <User size={20} strokeWidth={2.2} />
-        )}
-        <span className="icon-tooltip">Account</span>
-      </button>
-
+    <>
+      {/* Transparent backdrop — closes menu when clicking outside */}
       {isOpen && (
-        <div className="user-dropdown">
+        <div
+          style={{ position: "fixed", inset: 0, zIndex: 1199 }}
+          onClick={closeMenu}
+        />
+      )}
+
+      <div className="user-menu-container">
+        <button
+          ref={btnRef}
+          className="icon-wrapper user-menu-button"
+          onClick={toggleMenu}
+          aria-label="Account"
+        >
+          {isAuthenticated ? (
+            <div className="user-avatar">{getUserInitials()}</div>
+          ) : (
+            <User size={20} strokeWidth={2.2} />
+          )}
+          <span className="icon-tooltip">Account</span>
+        </button>
+      </div>
+
+      {/* Dropdown rendered at viewport level via position:fixed — escapes all stacking contexts */}
+      {isOpen && (
+        <div
+          className="user-dropdown"
+          style={{
+            position: "fixed",
+            top: dropdownPos.top,
+            right: dropdownPos.right,
+            zIndex: 1200,
+          }}
+          onClick={e => e.stopPropagation()}
+        >
           {isAuthenticated ? (
             <>
               <div className="dropdown-user-info">
@@ -100,7 +121,7 @@ function UserMenu() {
                     key={index}
                     to={item.path}
                     className="dropdown-item"
-                    onClick={() => setIsOpen(false)}
+                    onClick={closeMenu}
                   >
                     <span className="icon">{item.icon}</span>
                     <span>{item.label}</span>
@@ -125,7 +146,7 @@ function UserMenu() {
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }
 

@@ -336,6 +336,7 @@ function CheckoutPage() {
         currency: "INR",
         name: "Raviteja Home Foods",
         description: `Order ${order.razorpay_order_id}`,
+        image: window.location.origin + "/logo.png",
         order_id: order.razorpay_order_id,
         prefill: {
           name: shippingAddress.name,
@@ -799,7 +800,12 @@ function CheckoutPage() {
             <hr />
             
             <div className="summary-total">
-              <span>Total to Pay:</span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <span>Total to Pay:</span>
+                <span className="tax-inclusive-text" style={{ fontSize: '12px', fontWeight: '400', color: 'var(--text-muted)', marginTop: '2px', textTransform: 'none' }}>
+                  (Including all taxes)
+                </span>
+              </div>
               <span>₹{totalPreview + deliveryCharge}</span>
             </div>
             

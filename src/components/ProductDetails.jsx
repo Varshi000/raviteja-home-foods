@@ -1,8 +1,9 @@
 // src/components/ProductDetails.jsx - Add QR payment for Buy Now
 import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchProductById } from "../services/api";
+import { fetchProductById, fetchProductReviews, createReview } from "../services/api";
 import { CartContext } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 import "./ProductDetails.css";
 
 function ProductDetails() {
@@ -18,11 +19,113 @@ function ProductDetails() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
+  
+  // Reviews state
+  const [reviews, setReviews] = useState([]);
+  const [reviewsCount, setReviewsCount] = useState(0);
+  const [avgRating, setAvgRating] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Write Review state
+  const { user } = useAuth();
+  const [newRating, setNewRating] = useState(5);
+  const [newReviewTitle, setNewReviewTitle] = useState("");
+  const [newReviewContent, setNewReviewContent] = useState("");
+  const [newDisplayName, setNewDisplayName] = useState("");
+  const [newEmailAddress, setNewEmailAddress] = useState("");
+  const [newMobileNumber, setNewMobileNumber] = useState("");
+  const [postReviewLoading, setPostReviewLoading] = useState(false);
+  const [postSuccess, setPostSuccess] = useState(null);
+  const [postError, setPostError] = useState(null);
 
   useEffect(() => {
     loadProduct();
     window.scrollTo(0, 0);
+    setCurrentPage(1);
   }, [productId]);
+
+  // Prefill user info when user changes or loads
+  useEffect(() => {
+    if (user) {
+      setNewDisplayName(user.name || "");
+      setNewEmailAddress(user.email || "");
+      setNewMobileNumber(user.mobile || "");
+    }
+  }, [user]);
+
+  const handlePostReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!newRating) {
+      setPostError("Please select a rating.");
+      return;
+    }
+    if (!newReviewTitle.trim()) {
+      setPostError("Please enter a review title.");
+      return;
+    }
+    if (!newReviewContent.trim()) {
+      setPostError("Please write some review content.");
+      return;
+    }
+    if (!newDisplayName.trim()) {
+      setPostError("Please enter your name.");
+      return;
+    }
+    if (!newEmailAddress.trim()) {
+      setPostError("Please enter your email address.");
+      return;
+    }
+    if (!newMobileNumber.trim()) {
+      setPostError("Please enter your mobile number.");
+      return;
+    }
+
+    setPostReviewLoading(true);
+    setPostError(null);
+    setPostSuccess(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("product_id", productId);
+      formData.append("rating", newRating);
+      formData.append("review_title", newReviewTitle);
+      formData.append("review_content", newReviewContent);
+      formData.append("display_name", newDisplayName);
+      formData.append("email_address", newEmailAddress);
+      formData.append("mobile_number", newMobileNumber);
+
+      const response = await createReview(formData);
+      if (response && response.message) {
+        setPostSuccess("Review submitted successfully! Thank you for your feedback.");
+        setNewRating(5);
+        setNewReviewTitle("");
+        setNewReviewContent("");
+        
+        // Reload reviews to show the new review
+        try {
+          const reviewsRes = await fetchProductReviews(productId);
+          if (reviewsRes) {
+            setReviews(reviewsRes.data || []);
+            setReviewsCount(reviewsRes.count || 0);
+            setAvgRating(reviewsRes.avg_rating || 0);
+          }
+        } catch (loadErr) {
+          console.error(loadErr);
+        }
+        
+        setTimeout(() => {
+          setPostSuccess(null);
+        }, 5000);
+      } else {
+        throw new Error("Invalid response from server.");
+      }
+    } catch (err) {
+      console.error("Failed to submit review:", err);
+      setPostError(err.message || "Failed to submit review. Please try again.");
+    } finally {
+      setPostReviewLoading(false);
+    }
+  };
 
   const loadProduct = async () => {
     setLoading(true);
@@ -33,6 +136,18 @@ function ProductDetails() {
         setProduct(data);
         if (data.pricing && data.pricing.length > 0) {
           setSelectedWeight(data.pricing[0].weight);
+        }
+        
+        // Fetch product reviews
+        try {
+          const reviewsRes = await fetchProductReviews(productId);
+          if (reviewsRes) {
+            setReviews(reviewsRes.data || []);
+            setReviewsCount(reviewsRes.count || 0);
+            setAvgRating(reviewsRes.avg_rating || 0);
+          }
+        } catch (revErr) {
+          console.error("Failed to load product reviews:", revErr);
         }
       } else {
         setError("Product not found");
@@ -112,6 +227,12 @@ function ProductDetails() {
   const currentPrice = getCurrentPrice();
   const totalPrice = currentPrice * quantity;
 
+  const reviewsPerPage = 5;
+  const indexOfLastReview = currentPage * reviewsPerPage;
+  const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
+  const currentReviews = reviews.slice(indexOfFirstReview, indexOfLastReview);
+  const totalPages = Math.ceil(reviews.length / reviewsPerPage);
+
   return (
     <div className="product-details-page">
       <div className="container">
@@ -153,6 +274,28 @@ function ProductDetails() {
           {/* Right: Product Info */}
           <div className="product-info-section">
             <h1 className="product-title">{product.product_name}</h1>
+            
+            {reviewsCount > 0 ? (
+              <div className="product-rating">
+                <span className="rating-stars">
+                  {"★".repeat(Math.round(avgRating)) + "☆".repeat(5 - Math.round(avgRating))}
+                </span>
+                <span className="rating-count">({reviewsCount} {reviewsCount === 1 ? 'review' : 'reviews'})</span>
+              </div>
+            ) : (
+              <div className="product-rating">
+                <span className="no-reviews">No reviews yet</span>
+              </div>
+            )}
+
+            {/* Business Type Badge */}
+            {product.business_type && (
+              <div className="business-type-badge-wrapper">
+                <span className="business-type-badge">
+                  🏷️ {product.business_type.charAt(0).toUpperCase() + product.business_type.slice(1)}
+                </span>
+              </div>
+            )}
             
             <div className="product-price">
               <span className="current-price">₹{currentPrice}</span>
@@ -216,13 +359,189 @@ function ProductDetails() {
               >
                 {addedToCart ? "✓ Added to Cart" : "🛒 Add to Cart"}
               </button>
-              <button className="btn-buy" onClick={handleBuyNow}>
-                Buy Now
-              </button>
             </div>
 
            
           </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="reviews-section">
+          <h2>Customer Reviews</h2>
+          {reviews.length > 0 ? (
+            <>
+              <div className="reviews-list">
+                {currentReviews.map((review, idx) => (
+                  <div key={review.id || idx} className="review-card">
+                    <div className="review-header">
+                      <div className="reviewer-info">
+                        <strong>{review.display_name}</strong>
+                        <span className="review-rating">
+                          {"★".repeat(review.rating) + "☆".repeat(5 - review.rating)}
+                        </span>
+                      </div>
+                      <span className="review-date">
+                        {new Date(review.created_at).toLocaleDateString("en-IN", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric"
+                        })}
+                      </span>
+                    </div>
+                    <div className="review-body">
+                      <h4 className="review-title">{review.review_title}</h4>
+                      <p className="review-content">{review.review_content}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Reviews Pagination */}
+              {reviews.length > reviewsPerPage && (
+                <div className="reviews-pagination" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginTop: '24px' }}>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    style={{ padding: '8px 16px', borderRadius: '20px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1, transition: 'all 0.2s' }}
+                  >
+                    ← Previous
+                  </button>
+                  <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage >= totalPages}
+                    style={{ padding: '8px 16px', borderRadius: '20px', cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer', opacity: currentPage >= totalPages ? 0.5 : 1, transition: 'all 0.2s' }}
+                  >
+                    Next →
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="no-reviews-section">
+              <p>There are no reviews for this product yet. Be the first to buy and leave a review!</p>
+            </div>
+          )}
+        </div>
+
+        {/* Post a Review Form */}
+        <div className="post-review-section" style={{ marginTop: '40px', paddingTop: '30px', borderTop: '1px solid var(--border-color)' }}>
+          <h2 style={{ fontSize: '24px', marginBottom: '24px', color: 'var(--text-main)' }}>Write a Customer Review</h2>
+          <form onSubmit={handlePostReviewSubmit} style={{ maxWidth: '600px', marginTop: '20px' }}>
+            {postSuccess && (
+              <div className="review-message success" style={{ padding: '12px', background: '#e8f5e9', color: '#2e7d32', borderRadius: '6px', marginBottom: '16px' }}>
+                {postSuccess}
+              </div>
+            )}
+            {postError && (
+              <div className="review-message error" style={{ padding: '12px', background: '#ffebee', color: '#c62828', borderRadius: '6px', marginBottom: '16px' }}>
+                ⚠️ {postError}
+              </div>
+            )}
+
+            <div className="form-group" style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>Overall Rating</label>
+              <div className="star-rating" style={{ display: 'flex', gap: '8px' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    type="button"
+                    key={star}
+                    style={{ background: 'transparent', border: 'none', fontSize: '32px', cursor: 'pointer', color: star <= newRating ? '#ffc107' : '#ccc', padding: 0, transition: 'transform 0.1s ease' }}
+                    onClick={() => setNewRating(star)}
+                    className="star-btn"
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '20px' }}>
+              <label htmlFor="postReviewTitle" style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>Review Title</label>
+              <input
+                type="text"
+                id="postReviewTitle"
+                className="form-input"
+                placeholder="e.g. Delicious Taste, Highly Recommend!"
+                value={newReviewTitle}
+                onChange={(e) => setNewReviewTitle(e.target.value)}
+                required
+                style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--border-color)', borderRadius: '8px', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '20px' }}>
+              <label htmlFor="postReviewContent" style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>Review Details</label>
+              <textarea
+                id="postReviewContent"
+                className="form-input"
+                rows="4"
+                placeholder="Tell us what you liked or disliked about this food..."
+                value={newReviewContent}
+                onChange={(e) => setNewReviewContent(e.target.value)}
+                required
+                style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--border-color)', borderRadius: '8px', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '20px' }}>
+              <label htmlFor="postDisplayName" style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>Your Name</label>
+              <input
+                type="text"
+                id="postDisplayName"
+                className="form-input"
+                placeholder="e.g. John Doe"
+                value={newDisplayName}
+                onChange={(e) => setNewDisplayName(e.target.value)}
+                required
+                style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--border-color)', borderRadius: '8px', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div className="form-group text-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+              <div>
+                <label htmlFor="postEmailAddress" style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>Email Address</label>
+                <input
+                  type="email"
+                  id="postEmailAddress"
+                  className="form-input"
+                  placeholder="e.g. john@example.com"
+                  value={newEmailAddress}
+                  onChange={(e) => setNewEmailAddress(e.target.value)}
+                  required
+                  style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--border-color)', borderRadius: '8px', boxSizing: 'border-box' }}
+                />
+              </div>
+              <div>
+                <label htmlFor="postMobileNumber" style={{ display: 'block', fontWeight: '500', marginBottom: '8px' }}>Mobile Number</label>
+                <input
+                  type="tel"
+                  id="postMobileNumber"
+                  className="form-input"
+                  placeholder="e.g. 9876543210"
+                  value={newMobileNumber}
+                  onChange={(e) => setNewMobileNumber(e.target.value)}
+                  required
+                  style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--border-color)', borderRadius: '8px', boxSizing: 'border-box' }}
+                />
+              </div>
+            </div>
+
+            <button 
+              type="submit" 
+              className="btn-buy" 
+              disabled={postReviewLoading}
+              style={{ padding: '12px 30px', borderRadius: '30px', width: 'fit-content' }}
+            >
+              {postReviewLoading ? "Submitting..." : "Submit Review"}
+            </button>
+          </form>
         </div>
       </div>
 

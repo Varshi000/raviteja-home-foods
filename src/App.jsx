@@ -37,6 +37,7 @@ import AdminProducts from "./components/admin/AdminProducts";
 import AdminOrders from "./components/admin/AdminOrders";
 import AdminCategories from "./components/admin/AdminCategories";
 import AdminShipping from "./components/admin/AdminShipping";
+import AdminCoupons from "./components/admin/AdminCoupons";
 
 
 // Protected Route Component for Admin
@@ -246,6 +247,14 @@ function App() {
           element={
             <ProtectedRoute>
               <AdminShipping />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/coupons" 
+          element={
+            <ProtectedRoute>
+              <AdminCoupons />
             </ProtectedRoute>
           } 
         />

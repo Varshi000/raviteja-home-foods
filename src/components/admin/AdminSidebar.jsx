@@ -7,7 +7,8 @@ import {
   FaClipboardList,
   FaSignOutAlt,
   FaStore,
-  FaTruck
+  FaTruck,
+  FaTicketAlt
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import "./AdminSidebar.css";
@@ -21,6 +22,7 @@ function AdminSidebar() {
     { icon: <FaTags />, label: "Categories", path: "/admin/categories" },
     { icon: <FaClipboardList />, label: "Orders", path: "/admin/orders" },
     { icon: <FaTruck />, label: "Shipping", path: "/admin/shipping" },
+    { icon: <FaTicketAlt />, label: "Coupons", path: "/admin/coupons" },
   ];
 
   return (

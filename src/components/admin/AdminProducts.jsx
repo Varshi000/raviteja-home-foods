@@ -20,15 +20,12 @@ function AdminProducts() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [uploadingImages, setUploadingImages] = useState(false);
-  const [availableSubcategories, setAvailableSubcategories] = useState([]);
-  const [showSubcategoryField, setShowSubcategoryField] = useState(false);
   const { token, user } = useAuth();
 
   const [formData, setFormData] = useState({
     product_name: "",
     description: "",
     category_id: "",
-    subcategory: "",
     pricing: [{ weight: "", price: "", stock: "" }],
     images_url: [],
     is_active: true,
@@ -39,6 +36,7 @@ function AdminProducts() {
     return { "Authorization": `Bearer ${authToken}` };
   };
 
+  // Message helpers
   const showSuccessMessage = (message) => {
     setSuccess(message);
     setTimeout(() => setSuccess(null), 3000);
@@ -50,19 +48,41 @@ function AdminProducts() {
     alert(message);
   };
 
+  // Get category name by ID (highly robust to handle slugs, names, or database ObjectIds)
   const getCategoryName = (categoryId) => {
     if (!categoryId) return "N/A";
-    const category = categories.find(cat => cat.id === categoryId);
-    return category ? category.name : "N/A";
+    const normalizedId = String(categoryId).trim().toLowerCase();
+
+    // Find matching category in the fetched category list
+    const category = categories.find(cat => {
+      const catId = String(cat.id).trim().toLowerCase();
+      const catName = String(cat.name).trim().toLowerCase();
+      const catSlug = catName.replace(/\s+/g, '-');
+
+      return catId === normalizedId ||
+        catName === normalizedId ||
+        catSlug === normalizedId ||
+        catId === normalizedId.replace(/\s+/g, '-');
+    });
+
+    // If a match is found in categories, return its canonical name.
+    if (category) {
+      return category.name;
+    }
+
+    // If categoryId is a 24-character hex string (standard Mongo ObjectId), return "N/A" since it's not a human readable name
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(categoryId);
+    return isMongoId ? "N/A" : categoryId;
   };
 
+  // Upload images to S3
   const uploadImages = async (files) => {
     setUploadingImages(true);
     const uploadedUrls = [];
 
     try {
       const authToken = token || localStorage.getItem("access_token");
-      
+
       for (const file of files) {
         const imageFormData = new FormData();
         imageFormData.append("files", file);
@@ -89,7 +109,7 @@ function AdminProducts() {
         ...prev,
         images_url: [...prev.images_url, ...uploadedUrls]
       }));
-      
+
       showSuccessMessage(`${uploadedUrls.length} image(s) uploaded successfully!`);
     } catch (err) {
       console.error("Upload failed:", err);
@@ -99,27 +119,29 @@ function AdminProducts() {
     }
   };
 
+  // Handle image file selection
   const handleImageSelect = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
-    
+
     const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
     const invalidFiles = files.filter(f => !validTypes.includes(f.type));
-    
+
     if (invalidFiles.length > 0) {
       showErrorMessage("Only JPEG, PNG, JPG, and WEBP images are allowed");
       return;
     }
-    
+
     const largeFiles = files.filter(f => f.size > 5 * 1024 * 1024);
     if (largeFiles.length > 0) {
       showErrorMessage("Each image must be less than 5MB");
       return;
     }
-    
+
     uploadImages(files);
   };
 
+  // Remove image from list
   const removeImage = (indexToRemove) => {
     setFormData(prev => ({
       ...prev,
@@ -127,6 +149,7 @@ function AdminProducts() {
     }));
   };
 
+  // Load products
   const loadProducts = async () => {
     setLoading(true);
     try {
@@ -144,42 +167,56 @@ function AdminProducts() {
     }
   };
 
+  // Load categories
   const loadCategories = async () => {
     try {
       const authToken = token || localStorage.getItem("access_token");
-      
+      // Use the categories list endpoint to get the database category objects with their correct IDs (_id)
       const response = await fetch(`${BASE_URL}/categories/`, {
         headers: { "Authorization": `Bearer ${authToken}` },
       });
-      
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      
       const data = await response.json();
-      console.log("Categories API response:", data);
-      
+
       let categoriesArray = [];
       if (data.data && Array.isArray(data.data)) {
         categoriesArray = data.data;
       } else if (Array.isArray(data)) {
         categoriesArray = data;
-      } else {
-        categoriesArray = [];
+      } else if (data.categories && Array.isArray(data.categories)) {
+        categoriesArray = data.categories;
       }
-      
-      const categoryList = categoriesArray
-        .filter(cat => cat && cat.name)
-        .map(cat => ({
-          id: cat._id || cat.id,
-          name: cat.name,
-          subcategories: cat.subcategory || []
-        }));
-      
-      console.log("Mapped categories with subcategories:", categoryList);
+
+      let categoryList = [];
+      if (categoriesArray.length > 0) {
+        categoryList = categoriesArray
+          .filter(cat => cat && cat.name)
+          .map((cat) => ({
+            id: cat._id || cat.id,
+            name: cat.name
+          }));
+      } else {
+        categoryList = [
+          { id: "sweets", name: "Sweets" },
+          { id: "namkeen", name: "Namkeen" },
+          { id: "pickles", name: "Pickles" },
+          { id: "chilli-powders", name: "Chilli Powders" },
+          { id: "daily-essentials", name: "Daily Essentials" },
+          { id: "gift-packs", name: "Gift Packs" },
+        ];
+      }
       setCategories(categoryList);
-      
     } catch (err) {
       console.error("Failed to load categories:", err);
-      setCategories([]);
+      // Fallback in case of API failure
+      setCategories([
+        { id: "sweets", name: "Sweets" },
+        { id: "namkeen", name: "Namkeen" },
+        { id: "pickles", name: "Pickles" },
+        { id: "chilli-powders", name: "Chilli Powders" },
+        { id: "daily-essentials", name: "Daily Essentials" },
+        { id: "gift-packs", name: "Gift Packs" },
+      ]);
     }
   };
 
@@ -190,26 +227,7 @@ function AdminProducts() {
     }
   }, [token]);
 
-  const handleCategoryChange = (e) => {
-    const categoryId = e.target.value;
-    setFormData({ ...formData, category_id: categoryId, subcategory: "" });
-    
-    const selectedCat = categories.find(cat => cat.id === categoryId);
-    
-    if (selectedCat && selectedCat.subcategories && selectedCat.subcategories.length > 0) {
-      const subcats = selectedCat.subcategories.map(sub => {
-        if (typeof sub === 'string') return sub;
-        if (sub && typeof sub === 'object' && sub.name) return sub.name;
-        return String(sub);
-      });
-      setAvailableSubcategories(subcats);
-      setShowSubcategoryField(true);
-    } else {
-      setAvailableSubcategories([]);
-      setShowSubcategoryField(false);
-    }
-  };
-
+  // Create product
   const handleAddProduct = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -242,9 +260,6 @@ function AdminProducts() {
       formDataToSend.append("description", formData.description || "");
       formDataToSend.append("business_type", "retail");
       formDataToSend.append("category_id", formData.category_id);
-      if (formData.subcategory) {
-        formDataToSend.append("subcategory", formData.subcategory);
-      }
       formDataToSend.append("pricing", JSON.stringify(validPricing.map(p => ({
         weight: p.weight,
         price: Number(p.price),
@@ -252,7 +267,7 @@ function AdminProducts() {
       }))));
       formDataToSend.append("is_active", formData.is_active);
       formDataToSend.append("admin_id", adminId);
-      
+
       if (formData.images_url.length > 0) {
         formDataToSend.append("image_urls", JSON.stringify(formData.images_url));
       }
@@ -280,33 +295,20 @@ function AdminProducts() {
     }
   };
 
+  // Edit product - Open modal with product data
   const handleEditClick = (product) => {
     setSelectedProduct(product);
-    
+
+    // Parse pricing data
     let pricingData = product.pricing || [];
     if (pricingData.length === 0) {
       pricingData = [{ weight: "", price: "", stock: "" }];
     }
-    
-    const selectedCat = categories.find(cat => cat.id === product.category_id);
-    if (selectedCat && selectedCat.subcategories && selectedCat.subcategories.length > 0) {
-      const subcats = selectedCat.subcategories.map(sub => {
-        if (typeof sub === 'string') return sub;
-        if (sub && typeof sub === 'object' && sub.name) return sub.name;
-        return String(sub);
-      });
-      setAvailableSubcategories(subcats);
-      setShowSubcategoryField(true);
-    } else {
-      setAvailableSubcategories([]);
-      setShowSubcategoryField(false);
-    }
-    
+
     setFormData({
       product_name: product.product_name || "",
       description: product.description || "",
       category_id: product.category_id || "",
-      subcategory: product.subcategory || "",
       pricing: pricingData.map(p => ({
         weight: p.weight || "",
         price: p.price || "",
@@ -318,6 +320,7 @@ function AdminProducts() {
     setShowEditModal(true);
   };
 
+  // Update product - Save changes
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -344,16 +347,13 @@ function AdminProducts() {
       formDataToSend.append("product_name", formData.product_name.trim());
       formDataToSend.append("description", formData.description || "");
       formDataToSend.append("category_id", formData.category_id);
-      if (formData.subcategory) {
-        formDataToSend.append("subcategory", formData.subcategory);
-      }
       formDataToSend.append("pricing", JSON.stringify(validPricing.map(p => ({
         weight: p.weight,
         price: Number(p.price),
         stock: p.stock ? Number(p.stock) : null
       }))));
       formDataToSend.append("is_active", formData.is_active);
-      
+
       if (formData.images_url.length > 0) {
         formDataToSend.append("image_urls", JSON.stringify(formData.images_url));
       }
@@ -381,6 +381,7 @@ function AdminProducts() {
     }
   };
 
+  // Delete product
   const handleDeleteProduct = async (product) => {
     if (!window.confirm(`⚠️ Are you sure you want to delete "${product.product_name}"? This action cannot be undone!`)) {
       return;
@@ -416,13 +417,10 @@ function AdminProducts() {
       product_name: "",
       description: "",
       category_id: "",
-      subcategory: "",
       pricing: [{ weight: "", price: "", stock: "" }],
       images_url: [],
       is_active: true,
     });
-    setAvailableSubcategories([]);
-    setShowSubcategoryField(false);
     setSelectedProduct(null);
   };
 
@@ -458,8 +456,8 @@ function AdminProducts() {
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.product_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    const productCategoryName = getCategoryName(product.category_id);
-    const matchesCategory = selectedCategory === "all" || productCategoryName.toLowerCase() === selectedCategory;
+    const productCategory = getCategoryName(product.category_id);
+    const matchesCategory = selectedCategory === "all" || productCategory.toLowerCase() === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -474,7 +472,7 @@ function AdminProducts() {
       <AdminSidebar />
       <div className="admin-main-container">
         <AdminNavbar title="Products" />
-        
+
         <div className="admin-main-content">
           <div className="products-header">
             <div className="header-left">
@@ -512,7 +510,7 @@ function AdminProducts() {
                 className="search-input"
               />
             </div>
-            <select 
+            <select
               className="category-filter"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
@@ -559,17 +557,17 @@ function AdminProducts() {
                   {filteredProducts.map((product) => (
                     <tr key={product.id}>
                       <td>
-                        <img 
-                          src={product.images_url?.[0] || "/placeholder.png"} 
+                        <img
+                          src={product.images_url?.[0] || "/placeholder.png"}
                           alt={product.product_name}
                           className="product-thumb"
                         />
                       </td>
                       <td className="product-name">{product.product_name}</td>
                       <td className="category-name">{getCategoryName(product.category_id)}</td>
-                      <td className="price">{formatCurrency(product.pricing?.[0]?.price || 0)}</td>
-                      <td className="stock">{product.pricing?.[0]?.stock || "N/A"}</td>
-                      <td className="status">
+                      <td>{formatCurrency(product.pricing?.[0]?.price || 0)}</td>
+                      <td>{product.pricing?.[0]?.stock || "N/A"}</td>
+                      <td>
                         <span className={`status-badge ${product.is_active ? "active" : "inactive"}`}>
                           {product.is_active ? "Active" : "Inactive"}
                         </span>
@@ -598,7 +596,7 @@ function AdminProducts() {
               <h2>➕ Add New Product</h2>
               <button className="close-modal" onClick={() => setShowAddModal(false)}>✕</button>
             </div>
-            
+
             <form onSubmit={handleAddProduct}>
               <div className="modal-body">
                 {/* Basic Information */}
@@ -607,14 +605,14 @@ function AdminProducts() {
                     <span className="section-icon">📝</span>
                     <h3>Basic Information</h3>
                   </div>
-                  
+
                   <div className="form-group">
                     <label>Product Name *</label>
                     <input
                       type="text"
                       required
                       value={formData.product_name}
-                      onChange={(e) => setFormData({...formData, product_name: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, product_name: e.target.value })}
                       className="form-input"
                       placeholder="e.g., Gulab Jamun, Kaju Katli"
                     />
@@ -624,7 +622,7 @@ function AdminProducts() {
                     <label>Description</label>
                     <textarea
                       value={formData.description}
-                      onChange={(e) => setFormData({...formData, description: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       className="form-input"
                       rows="3"
                       placeholder="Describe your product..."
@@ -654,7 +652,7 @@ function AdminProducts() {
                       </label>
                       <span className="upload-hint">JPEG, PNG, WEBP (Max 5MB each)</span>
                     </div>
-                    
+
                     {uploadingImages && (
                       <div className="uploading-status">
                         <div className="spinner-small"></div>
@@ -675,18 +673,18 @@ function AdminProducts() {
                   </div>
                 </div>
 
-                {/* Category & Subcategory */}
+                {/* Category */}
                 <div className="form-section">
                   <div className="section-title">
                     <span className="section-icon">📂</span>
-                    <h3>Category & Subcategory</h3>
+                    <h3>Category</h3>
                   </div>
 
                   <div className="form-group">
                     <label>Category *</label>
                     <select
                       value={formData.category_id}
-                      onChange={handleCategoryChange}
+                      onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
                       className="form-input"
                       required
                     >
@@ -696,23 +694,6 @@ function AdminProducts() {
                       ))}
                     </select>
                   </div>
-
-                  {showSubcategoryField && availableSubcategories.length > 0 && (
-                    <div className="form-group">
-                      <label>Subcategory (Optional)</label>
-                      <select
-                        value={formData.subcategory}
-                        onChange={(e) => setFormData({...formData, subcategory: e.target.value})}
-                        className="form-input"
-                      >
-                        <option value="">Select a subcategory</option>
-                        {availableSubcategories.map((sub, idx) => (
-                          <option key={idx} value={sub}>{sub}</option>
-                        ))}
-                      </select>
-                      <small className="field-hint">Select a subcategory for better product organization</small>
-                    </div>
-                  )}
                 </div>
 
                 {/* Pricing & Stock */}
@@ -767,7 +748,7 @@ function AdminProducts() {
                         type="radio"
                         name="status"
                         checked={formData.is_active === true}
-                        onChange={() => setFormData({...formData, is_active: true})}
+                        onChange={() => setFormData({ ...formData, is_active: true })}
                       />
                       <div className="status-content">
                         <strong>🟢 Active</strong>
@@ -779,7 +760,7 @@ function AdminProducts() {
                         type="radio"
                         name="status"
                         checked={formData.is_active === false}
-                        onChange={() => setFormData({...formData, is_active: false})}
+                        onChange={() => setFormData({ ...formData, is_active: false })}
                       />
                       <div className="status-content">
                         <strong>🔴 Inactive</strong>
@@ -809,7 +790,7 @@ function AdminProducts() {
               <h2>✏️ Edit Product</h2>
               <button className="close-modal" onClick={() => setShowEditModal(false)}>✕</button>
             </div>
-            
+
             <form onSubmit={handleUpdateProduct}>
               <div className="modal-body">
                 {/* Basic Information */}
@@ -818,14 +799,14 @@ function AdminProducts() {
                     <span className="section-icon">📝</span>
                     <h3>Basic Information</h3>
                   </div>
-                  
+
                   <div className="form-group">
                     <label>Product Name *</label>
                     <input
                       type="text"
                       required
                       value={formData.product_name}
-                      onChange={(e) => setFormData({...formData, product_name: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, product_name: e.target.value })}
                       className="form-input"
                     />
                   </div>
@@ -834,7 +815,7 @@ function AdminProducts() {
                     <label>Description</label>
                     <textarea
                       value={formData.description}
-                      onChange={(e) => setFormData({...formData, description: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       className="form-input"
                       rows="3"
                     />
@@ -863,7 +844,7 @@ function AdminProducts() {
                       </label>
                       <span className="upload-hint">Add more images to this product</span>
                     </div>
-                    
+
                     {uploadingImages && (
                       <div className="uploading-status">
                         <div className="spinner-small"></div>
@@ -884,18 +865,18 @@ function AdminProducts() {
                   </div>
                 </div>
 
-                {/* Category & Subcategory */}
+                {/* Category */}
                 <div className="form-section">
                   <div className="section-title">
                     <span className="section-icon">📂</span>
-                    <h3>Category & Subcategory</h3>
+                    <h3>Category</h3>
                   </div>
 
                   <div className="form-group">
                     <label>Category *</label>
                     <select
                       value={formData.category_id}
-                      onChange={handleCategoryChange}
+                      onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
                       className="form-input"
                       required
                     >
@@ -905,22 +886,6 @@ function AdminProducts() {
                       ))}
                     </select>
                   </div>
-
-                  {showSubcategoryField && availableSubcategories.length > 0 && (
-                    <div className="form-group">
-                      <label>Subcategory</label>
-                      <select
-                        value={formData.subcategory}
-                        onChange={(e) => setFormData({...formData, subcategory: e.target.value})}
-                        className="form-input"
-                      >
-                        <option value="">Select a subcategory</option>
-                        {availableSubcategories.map((sub, idx) => (
-                          <option key={idx} value={sub}>{sub}</option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
                 </div>
 
                 {/* Pricing & Stock */}
@@ -934,14 +899,14 @@ function AdminProducts() {
                     <div key={idx} className="pricing-row">
                       <input
                         type="text"
-                        placeholder="Weight"
+                        placeholder="Weight (e.g., 250g, 500g, 1kg)"
                         value={price.weight}
                         onChange={(e) => updatePricing(idx, "weight", e.target.value)}
                         className="pricing-weight"
                       />
                       <input
                         type="number"
-                        placeholder="Price"
+                        placeholder="Price (₹)"
                         value={price.price}
                         onChange={(e) => updatePricing(idx, "price", e.target.value)}
                         className="pricing-price"
@@ -975,7 +940,7 @@ function AdminProducts() {
                         type="radio"
                         name="status"
                         checked={formData.is_active === true}
-                        onChange={() => setFormData({...formData, is_active: true})}
+                        onChange={() => setFormData({ ...formData, is_active: true })}
                       />
                       <div className="status-content">
                         <strong>🟢 Active</strong>
@@ -987,7 +952,7 @@ function AdminProducts() {
                         type="radio"
                         name="status"
                         checked={formData.is_active === false}
-                        onChange={() => setFormData({...formData, is_active: false})}
+                        onChange={() => setFormData({ ...formData, is_active: false })}
                       />
                       <div className="status-content">
                         <strong>🔴 Inactive</strong>
