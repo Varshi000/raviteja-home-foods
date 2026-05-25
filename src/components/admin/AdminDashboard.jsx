@@ -4,6 +4,20 @@ import AdminSidebar from "./AdminSidebar";
 import AdminNavbar from "./AdminNavbar";
 import { getDashboardStats } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
+import {
+  ShoppingCart,
+  TrendingUp,
+  Calendar,
+  DollarSign,
+  Clock,
+  RefreshCw,
+  AlertCircle,
+  Package,
+  List,
+  Tag,
+  Gift,
+  Star,
+} from "lucide-react";
 import "./AdminDashboard.css";
 
 function AdminDashboard() {
@@ -72,36 +86,52 @@ function AdminDashboard() {
     { 
       label: "Total Sales", 
       value: stats.total.sales, 
-      icon: "📦", 
-      color: "var(--primary-color)",
+      icon: "ShoppingCart", 
+      color: "#7b1113",
       subtitle: "All time orders"
     },
     { 
       label: "Total Revenue", 
       value: formatCurrency(stats.total.revenue), 
-      icon: "💰", 
-      color: "var(--secondary-color)",
+      icon: "TrendingUp", 
+      color: "#d2a355",
       subtitle: "Lifetime earnings"
     },
     { 
       label: "Today's Orders", 
       value: stats.daily.sales, 
-      icon: "📅", 
+      icon: "Calendar", 
       color: "#2e7d32",
       subtitle: "Last 24 hours"
     },
     { 
       label: "Today's Revenue", 
       value: formatCurrency(stats.daily.revenue), 
-      icon: "💵", 
+      icon: "DollarSign", 
       color: "#ff9800",
       subtitle: "Today's earnings"
     },
   ];
 
+  const getIcon = (iconName) => {
+    const iconMap = {
+      ShoppingCart,
+      TrendingUp,
+      Calendar,
+      DollarSign,
+      Clock,
+      Package,
+      List,
+      Tag,
+      Gift,
+      Star,
+    };
+    return iconMap[iconName] || ShoppingCart;
+  };
+
   const periodCards = [
-    { label: "This Week", sales: stats.weekly.sales, revenue: stats.weekly.revenue, icon: "📆" },
-    { label: "This Month", sales: stats.monthly.sales, revenue: stats.monthly.revenue, icon: "📅" },
+    { label: "This Week", sales: stats.weekly.sales, revenue: stats.weekly.revenue, icon: "Calendar" },
+    { label: "This Month", sales: stats.monthly.sales, revenue: stats.monthly.revenue, icon: "Clock" },
   ];
 
   if (loading) {
@@ -126,7 +156,9 @@ function AdminDashboard() {
         <div className="admin-main-container">
           <AdminNavbar title="Dashboard" />
           <div className="admin-error-state">
-            <span className="error-icon">⚠️</span>
+            <div className="error-icon-wrapper">
+              <AlertCircle size={56} />
+            </div>
             <h3>Unable to load dashboard</h3>
             <p>{error}</p>
             <button onClick={fetchDashboardStats} className="retry-btn">
@@ -147,53 +179,69 @@ function AdminDashboard() {
         <div className="admin-main-content">
           {/* Last Updated Timestamp */}
           <div className="last-updated">
-            <span className="update-icon">🔄</span>
+            <RefreshCw size={16} className="update-icon" />
             Last updated: {formatDate(lastUpdated)}
-            <button onClick={fetchDashboardStats} className="refresh-btn" title="Refresh">
-              ↻
+            <button 
+              onClick={fetchDashboardStats} 
+              className="refresh-btn" 
+              title="Refresh"
+              aria-label="Refresh dashboard"
+            >
+              <RefreshCw size={16} />
             </button>
           </div>
 
           {/* Stats Grid */}
           <div className="stats-grid">
-            {statsCards.map((stat, index) => (
-              <div key={index} className="stat-card" style={{ borderTopColor: stat.color }}>
-                <div className="stat-icon">{stat.icon}</div>
-                <div className="stat-info">
-                  <h3>{stat.value}</h3>
-                  <p>{stat.label}</p>
-                  <span className="stat-subtitle">{stat.subtitle}</span>
+            {statsCards.map((stat, index) => {
+              const IconComponent = getIcon(stat.icon);
+              return (
+                <div key={index} className="stat-card" style={{ borderTopColor: stat.color }}>
+                  <div className="stat-icon" style={{ backgroundColor: `${stat.color}15` }}>
+                    <IconComponent size={28} color={stat.color} strokeWidth={2} />
+                  </div>
+                  <div className="stat-info">
+                    <h3>{stat.value}</h3>
+                    <p>{stat.label}</p>
+                    <span className="stat-subtitle">{stat.subtitle}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Period Stats */}
           <div className="period-stats">
-            {periodCards.map((period, index) => (
-              <div key={index} className="period-card">
-                <div className="period-header">
-                  <span className="period-icon">{period.icon}</span>
-                  <h3>{period.label}</h3>
-                </div>
-                <div className="period-details">
-                  <div className="period-item">
-                    <span className="period-label">Orders:</span>
-                    <span className="period-value">{period.sales}</span>
+            {periodCards.map((period, index) => {
+              const IconComponent = getIcon(period.icon);
+              return (
+                <div key={index} className="period-card">
+                  <div className="period-header">
+                    <IconComponent size={24} className="period-icon" />
+                    <h3>{period.label}</h3>
                   </div>
-                  <div className="period-item">
-                    <span className="period-label">Revenue:</span>
-                    <span className="period-value">{formatCurrency(period.revenue)}</span>
+                  <div className="period-details">
+                    <div className="period-item">
+                      <span className="period-label">Orders:</span>
+                      <span className="period-value">{period.sales}</span>
+                    </div>
+                    <div className="period-item">
+                      <span className="period-label">Revenue:</span>
+                      <span className="period-value">{formatCurrency(period.revenue)}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Top Products Section */}
           <div className="top-products-section">
             <div className="section-header">
-              <h2>🏆 Top Selling Products</h2>
+              <div className="section-title">
+                <Star size={20} className="title-icon" />
+                <h2>Top Selling Products</h2>
+              </div>
               <span className="section-badge">Last 30 days</span>
             </div>
             
@@ -229,19 +277,23 @@ function AdminDashboard() {
 
           {/* Quick Actions */}
           <div className="quick-actions">
-            <h3>Quick Actions</h3>
+            <h3 className="quick-actions-title">Quick Actions</h3>
             <div className="actions-grid">
               <button className="action-btn" onClick={() => window.location.href = '/admin/products'}>
-                📦 Manage Products
+                <Package size={18} />
+                Manage Products
               </button>
               <button className="action-btn" onClick={() => window.location.href = '/admin/orders'}>
-                📋 View All Orders
+                <List size={18} />
+                View All Orders
               </button>
               <button className="action-btn" onClick={() => window.location.href = '/admin/categories'}>
-                🏷️ Manage Categories
+                <Tag size={18} />
+                Manage Categories
               </button>
               <button className="action-btn" onClick={() => window.location.href = '/admin/coupons'}>
-                🎟️ Manage Coupons
+                <Gift size={18} />
+                Manage Coupons
               </button>
             </div>
           </div>

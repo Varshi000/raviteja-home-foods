@@ -42,7 +42,11 @@ function AdminLogin() {
     <div className="admin-login-container">
       <div className="admin-login-card">
         <div className="admin-login-header">
-          <span className="admin-shield">🛡️</span>
+          <img
+            src="/logo.png"
+            alt="Raviteja Home Foods"
+            className="admin-logo"
+          />
           <h1>Admin Portal</h1>
           <p>Raviteja Home Foods</p>
         </div>

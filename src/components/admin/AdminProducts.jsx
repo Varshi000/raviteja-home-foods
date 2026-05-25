@@ -3,6 +3,20 @@ import { useState, useEffect } from "react";
 import AdminSidebar from "./AdminSidebar";
 import AdminNavbar from "./AdminNavbar";
 import { useAuth } from "../../context/AuthContext";
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Search,
+  AlertCircle,
+  CheckCircle,
+  Package,
+  FileText,
+  Image,
+  FolderOpen,
+  DollarSign,
+  Settings,
+} from "lucide-react";
 import "./AdminProducts.css";
 
 const BASE_URL = "http://18.61.65.71:5454";
@@ -480,13 +494,14 @@ function AdminProducts() {
               <p>Manage your product catalog</p>
             </div>
             <button className="add-product-btn" onClick={() => setShowAddModal(true)}>
-              + Add New Product
+              <Plus size={20} />
+              Add New Product
             </button>
           </div>
 
           {success && (
             <div className="success-alert">
-              <span>✅</span>
+              <CheckCircle size={20} />
               <p>{success}</p>
               <button onClick={() => setSuccess(null)}>✕</button>
             </div>
@@ -494,7 +509,7 @@ function AdminProducts() {
 
           {error && (
             <div className="error-alert">
-              <span>⚠️</span>
+              <AlertCircle size={20} />
               <p>{error}</p>
               <button onClick={() => setError(null)}>Dismiss</button>
             </div>
@@ -502,6 +517,7 @@ function AdminProducts() {
 
           <div className="products-filters">
             <div className="search-box">
+              <Search size={18} className="search-icon" />
               <input
                 type="text"
                 placeholder="Search products..."
@@ -524,14 +540,17 @@ function AdminProducts() {
 
           <div className="products-stats">
             <div className="stat-box">
+              <Package size={24} className="stat-icon" />
               <span className="stat-value">{stats.total}</span>
               <span className="stat-label">Total Products</span>
             </div>
-            <div className="stat-box">
+            <div className="stat-box stat-box-active">
+              <CheckCircle size={24} className="stat-icon" />
               <span className="stat-value">{stats.active}</span>
               <span className="stat-label">Active</span>
             </div>
-            <div className="stat-box">
+            <div className="stat-box stat-box-inactive">
+              <AlertCircle size={24} className="stat-icon" />
               <span className="stat-value">{stats.inactive}</span>
               <span className="stat-label">Inactive</span>
             </div>
@@ -573,8 +592,12 @@ function AdminProducts() {
                         </span>
                       </td>
                       <td className="actions">
-                        <button className="edit-btn" onClick={() => handleEditClick(product)} title="Edit Product">✏️</button>
-                        <button className="delete-btn" onClick={() => handleDeleteProduct(product)} title="Delete Product">🗑️</button>
+                        <button className="edit-btn" onClick={() => handleEditClick(product)} title="Edit Product">
+                          <Edit2 size={18} />
+                        </button>
+                        <button className="delete-btn" onClick={() => handleDeleteProduct(product)} title="Delete Product">
+                          <Trash2 size={18} />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -593,7 +616,10 @@ function AdminProducts() {
         <div className="modal-overlay">
           <div className="modal-content modal-large">
             <div className="modal-header">
-              <h2>➕ Add New Product</h2>
+              <div className="modal-title">
+                <Plus size={24} />
+                <h2>Add New Product</h2>
+              </div>
               <button className="close-modal" onClick={() => setShowAddModal(false)}>✕</button>
             </div>
 
@@ -602,7 +628,7 @@ function AdminProducts() {
                 {/* Basic Information */}
                 <div className="form-section">
                   <div className="section-title">
-                    <span className="section-icon">📝</span>
+                    <FileText size={20} className="section-icon" />
                     <h3>Basic Information</h3>
                   </div>
 
@@ -633,14 +659,15 @@ function AdminProducts() {
                 {/* Product Images */}
                 <div className="form-section">
                   <div className="section-title">
-                    <span className="section-icon">🖼️</span>
+                    <Image size={20} className="section-icon" />
                     <h3>Product Images</h3>
                   </div>
 
                   <div className="image-upload-area">
                     <div className="image-upload-input">
                       <label className="upload-btn">
-                        📸 Choose Images
+                        <Image size={18} />
+                        Choose Images
                         <input
                           type="file"
                           accept="image/jpeg,image/png,image/jpg,image/webp"
@@ -774,7 +801,7 @@ function AdminProducts() {
               <div className="modal-actions">
                 <button type="button" className="btn-secondary" onClick={() => setShowAddModal(false)}>Cancel</button>
                 <button type="submit" className="btn-primary" disabled={submitting || uploadingImages}>
-                  {submitting ? "Creating..." : (uploadingImages ? "Uploading..." : "✓ Create Product")}
+                  {submitting ? "Creating..." : (uploadingImages ? "Uploading..." : (<><CheckCircle size={18} /> Create Product</>))}
                 </button>
               </div>
             </form>
@@ -787,7 +814,10 @@ function AdminProducts() {
         <div className="modal-overlay">
           <div className="modal-content modal-large">
             <div className="modal-header">
-              <h2>✏️ Edit Product</h2>
+              <div className="modal-title">
+                <Edit2 size={24} />
+                <h2>Edit Product</h2>
+              </div>
               <button className="close-modal" onClick={() => setShowEditModal(false)}>✕</button>
             </div>
 
@@ -796,7 +826,7 @@ function AdminProducts() {
                 {/* Basic Information */}
                 <div className="form-section">
                   <div className="section-title">
-                    <span className="section-icon">📝</span>
+                    <FileText size={20} className="section-icon" />
                     <h3>Basic Information</h3>
                   </div>
 
@@ -825,14 +855,15 @@ function AdminProducts() {
                 {/* Product Images */}
                 <div className="form-section">
                   <div className="section-title">
-                    <span className="section-icon">🖼️</span>
+                    <Image size={20} className="section-icon" />
                     <h3>Product Images</h3>
                   </div>
 
                   <div className="image-upload-area">
                     <div className="image-upload-input">
                       <label className="upload-btn">
-                        📸 Add More Images
+                        <Image size={18} />
+                        Add More Images
                         <input
                           type="file"
                           accept="image/jpeg,image/png,image/jpg,image/webp"
@@ -966,7 +997,7 @@ function AdminProducts() {
               <div className="modal-actions">
                 <button type="button" className="btn-secondary" onClick={() => setShowEditModal(false)}>Cancel</button>
                 <button type="submit" className="btn-primary" disabled={submitting || uploadingImages}>
-                  {submitting ? "Saving..." : (uploadingImages ? "Uploading..." : "✓ Save Changes")}
+                  {submitting ? "Saving..." : (uploadingImages ? "Uploading..." : (<><CheckCircle size={18} /> Save Changes</>))}
                 </button>
               </div>
             </form>
