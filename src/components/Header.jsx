@@ -4,7 +4,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useContext, useEffect, useRef } from "react";
 import { CartContext } from "../context/CartContext";
 import UserMenu from "./UserMenu";
-import { Search, ShoppingCart, X, Menu, ChevronDown } from "lucide-react";
+import { ShoppingCart, X, Menu, ChevronDown } from "lucide-react";
 import { fetchCategoriesWithSubcategories } from "../services/api";
 
 const SWEETS_SUBCATEGORIES = [
@@ -43,7 +43,6 @@ const FALLBACK_NAV_ITEMS = [
 
 function Header() {
   const { cartItems } = useContext(CartContext);
-  const [searchActive, setSearchActive] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -92,18 +91,11 @@ function Header() {
     loadHeaderCategories();
   }, []);
 
-  // Close search and mobile drawer on route change
+  // Close mobile drawer on route change
   useEffect(() => {
     setOpenDropdown(null);
     setMobileMenuOpen(false);
   }, [location.pathname]);
-
-  // Close search on Escape key
-  useEffect(() => {
-    const handleKey = (e) => { if (e.key === "Escape") setSearchActive(false); };
-    if (searchActive) document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
-  }, [searchActive]);
 
   const handleMouseEnter = (key) => {
     clearTimeout(closeTimer.current);
@@ -189,36 +181,8 @@ function Header() {
         )}
       </nav>
 
-      {/* Search Overlay */}
-      {searchActive && (
-        <div className="search-overlay" onClick={(e) => e.target === e.currentTarget && setSearchActive(false)}>
-          <div className="search-box">
-            <Search size={20} strokeWidth={2.2} className="search-icon-inside" />
-            <input
-              type="text"
-              placeholder="Search sweets, namkeen, pickles..."
-              className="search-input"
-              autoFocus
-            />
-            <button className="search-close-btn" onClick={() => setSearchActive(false)}>
-              <X size={18} strokeWidth={2.2} />
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Right Utility Icons */}
       <div className="header-icons">
-        <button
-          className="icon-wrapper search-icon"
-          onClick={() => setSearchActive(true)}
-          aria-label="Search"
-          title="Search"
-        >
-          <Search size={20} strokeWidth={2.2} />
-          <span className="icon-tooltip">Search</span>
-        </button>
-
         {/* User Menu (login / profile) */}
         <UserMenu />
 
