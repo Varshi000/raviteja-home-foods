@@ -29,8 +29,7 @@ function AdminSidebar() {
     <div className="admin-sidebar">
       <div className="admin-sidebar-header">
         <div className="admin-logo">
-          <FaStore />
-          <span>Admin Panel</span>
+          <FaStore /><span>Admin Panel</span>
         </div>
       </div>
 

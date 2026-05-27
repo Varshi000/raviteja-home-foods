@@ -67,7 +67,7 @@ function UserMenu() {
     { icon: <ClipboardList size={16} />, label: "All Orders", path: "/admin/orders" },
   ];
 
-  const menuItems = userIsAdmin ? [...adminMenuItems, ...userMenuItems] : userMenuItems;
+  const menuItems = userIsAdmin ? adminMenuItems : userMenuItems;
 
   return (
     <>

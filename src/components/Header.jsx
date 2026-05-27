@@ -2,6 +2,7 @@
 import "./Header.css";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useContext, useEffect, useRef } from "react";
+import { useAuth } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
 import UserMenu from "./UserMenu";
 import { ShoppingCart, X, Menu, ChevronDown } from "lucide-react";
@@ -43,6 +44,7 @@ const FALLBACK_NAV_ITEMS = [
 
 function Header() {
   const { cartItems } = useContext(CartContext);
+  const { isAdmin } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -186,14 +188,16 @@ function Header() {
         {/* User Menu (login / profile) */}
         <UserMenu />
 
-        {/* Cart */}
-        <Link to="/cart" className="icon-wrapper cart-link" aria-label="Cart" title="Cart">
-          <ShoppingCart size={20} strokeWidth={2.2} />
-          {cartItemCount > 0 && (
-            <span className="cart-badge">{cartItemCount > 99 ? "99+" : cartItemCount}</span>
-          )}
-          <span className="icon-tooltip">Cart</span>
-        </Link>
+        {/* Cart (hide for admin users) */}
+        {!isAdmin && (
+          <Link to="/cart" className="icon-wrapper cart-link" aria-label="Cart" title="Cart">
+            <ShoppingCart size={20} strokeWidth={2.2} />
+            {cartItemCount > 0 && (
+              <span className="cart-badge">{cartItemCount > 99 ? "99+" : cartItemCount}</span>
+            )}
+            <span className="icon-tooltip">Cart</span>
+          </Link>
+        )}
 
         {/* Hamburger Menu Icon (Mobile Only) */}
         <button

@@ -38,26 +38,35 @@
 
 /* Sidebar Header */
 .admin-sidebar-header {
-  padding: 28px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  margin-bottom: 8px;
-}
+  padding: 30px 24px;
+  min-height: 110px;
 
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .admin-logo {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  justify-content: flex-start;
+  gap: 10px;
+  white-space: nowrap;
 }
 
 .admin-logo svg {
-  font-size: 28px;
+  font-size: 26px;
   color: #d2a355;
+  flex-shrink: 0;
 }
 
 .admin-logo span {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+
   background: linear-gradient(135deg, #fff 0%, #d2a355 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

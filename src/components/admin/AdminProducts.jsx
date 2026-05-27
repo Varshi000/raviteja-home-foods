@@ -40,6 +40,7 @@ function AdminProducts() {
     product_name: "",
     description: "",
     category_id: "",
+    subcategory: "",
     pricing: [{ weight: "", price: "", stock: "" }],
     images_url: [],
     is_active: true,
@@ -205,18 +206,29 @@ function AdminProducts() {
       if (categoriesArray.length > 0) {
         categoryList = categoriesArray
           .filter(cat => cat && cat.name)
-          .map((cat) => ({
-            id: cat._id || cat.id,
-            name: cat.name
-          }));
+          .map((cat) => {
+            const rawSubcategories = Array.isArray(cat.subcategory)
+              ? cat.subcategory
+              : Array.isArray(cat.subcategories)
+                ? cat.subcategories
+                : [];
+
+            return {
+              id: cat._id || cat.id,
+              name: cat.name,
+              subcategories: rawSubcategories
+                .map((sub) => (typeof sub === "string" ? sub : sub?.name || sub?.label || sub?.value))
+                .filter(Boolean),
+            };
+          });
       } else {
         categoryList = [
-          { id: "sweets", name: "Sweets" },
-          { id: "namkeen", name: "Namkeen" },
-          { id: "pickles", name: "Pickles" },
-          { id: "chilli-powders", name: "Chilli Powders" },
-          { id: "daily-essentials", name: "Daily Essentials" },
-          { id: "gift-packs", name: "Gift Packs" },
+          { id: "sweets", name: "Sweets", subcategories: [] },
+          { id: "namkeen", name: "Namkeen", subcategories: [] },
+          { id: "pickles", name: "Pickles", subcategories: [] },
+          { id: "chilli-powders", name: "Chilli Powders", subcategories: [] },
+          { id: "daily-essentials", name: "Daily Essentials", subcategories: [] },
+          { id: "gift-packs", name: "Gift Packs", subcategories: [] },
         ];
       }
       setCategories(categoryList);
@@ -224,12 +236,12 @@ function AdminProducts() {
       console.error("Failed to load categories:", err);
       // Fallback in case of API failure
       setCategories([
-        { id: "sweets", name: "Sweets" },
-        { id: "namkeen", name: "Namkeen" },
-        { id: "pickles", name: "Pickles" },
-        { id: "chilli-powders", name: "Chilli Powders" },
-        { id: "daily-essentials", name: "Daily Essentials" },
-        { id: "gift-packs", name: "Gift Packs" },
+        { id: "sweets", name: "Sweets", subcategories: [] },
+        { id: "namkeen", name: "Namkeen", subcategories: [] },
+        { id: "pickles", name: "Pickles", subcategories: [] },
+        { id: "chilli-powders", name: "Chilli Powders", subcategories: [] },
+        { id: "daily-essentials", name: "Daily Essentials", subcategories: [] },
+        { id: "gift-packs", name: "Gift Packs", subcategories: [] },
       ]);
     }
   };
@@ -274,6 +286,9 @@ function AdminProducts() {
       formDataToSend.append("description", formData.description || "");
       formDataToSend.append("business_type", "retail");
       formDataToSend.append("category_id", formData.category_id);
+      if (formData.subcategory) {
+        formDataToSend.append("subcategory", formData.subcategory);
+      }
       formDataToSend.append("pricing", JSON.stringify(validPricing.map(p => ({
         weight: p.weight,
         price: Number(p.price),
@@ -323,6 +338,7 @@ function AdminProducts() {
       product_name: product.product_name || "",
       description: product.description || "",
       category_id: product.category_id || "",
+      subcategory: product.subcategory || "",
       pricing: pricingData.map(p => ({
         weight: p.weight || "",
         price: p.price || "",
@@ -361,6 +377,9 @@ function AdminProducts() {
       formDataToSend.append("product_name", formData.product_name.trim());
       formDataToSend.append("description", formData.description || "");
       formDataToSend.append("category_id", formData.category_id);
+      if (formData.subcategory) {
+        formDataToSend.append("subcategory", formData.subcategory);
+      }
       formDataToSend.append("pricing", JSON.stringify(validPricing.map(p => ({
         weight: p.weight,
         price: Number(p.price),
@@ -431,6 +450,7 @@ function AdminProducts() {
       product_name: "",
       description: "",
       category_id: "",
+      subcategory: "",
       pricing: [{ weight: "", price: "", stock: "" }],
       images_url: [],
       is_active: true,
@@ -474,6 +494,11 @@ function AdminProducts() {
     const matchesCategory = selectedCategory === "all" || productCategory.toLowerCase() === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const selectedCategoryData = categories.find((cat) => cat.id === formData.category_id);
+  const selectedSubcategories = Array.isArray(selectedCategoryData?.subcategories)
+    ? selectedCategoryData.subcategories.filter(Boolean)
+    : [];
 
   const stats = {
     total: products.length,
@@ -711,7 +736,7 @@ function AdminProducts() {
                     <label>Category *</label>
                     <select
                       value={formData.category_id}
-                      onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, category_id: e.target.value, subcategory: "" })}
                       className="form-input"
                       required
                     >
@@ -721,6 +746,22 @@ function AdminProducts() {
                       ))}
                     </select>
                   </div>
+
+                  {selectedSubcategories.length > 0 && (
+                    <div className="form-group">
+                      <label>Subcategory</label>
+                      <select
+                        value={formData.subcategory}
+                        onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
+                        className="form-input"
+                      >
+                        <option value="">Select a subcategory</option>
+                        {selectedSubcategories.map((sub) => (
+                          <option key={sub} value={sub}>{sub}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 {/* Pricing & Stock */}
@@ -907,7 +948,7 @@ function AdminProducts() {
                     <label>Category *</label>
                     <select
                       value={formData.category_id}
-                      onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, category_id: e.target.value, subcategory: "" })}
                       className="form-input"
                       required
                     >
@@ -917,6 +958,22 @@ function AdminProducts() {
                       ))}
                     </select>
                   </div>
+
+                  {selectedSubcategories.length > 0 && (
+                    <div className="form-group">
+                      <label>Subcategory</label>
+                      <select
+                        value={formData.subcategory}
+                        onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
+                        className="form-input"
+                      >
+                        <option value="">Select a subcategory</option>
+                        {selectedSubcategories.map((sub) => (
+                          <option key={sub} value={sub}>{sub}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 {/* Pricing & Stock */}
