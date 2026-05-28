@@ -120,6 +120,13 @@
   font-weight: 500;
 }
 
+.country-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 .add-state-btn {
   background: rgba(123, 17, 19, 0.08);
   color: var(--primary-color);
@@ -130,11 +137,36 @@
   cursor: pointer;
   font-size: 0.85rem;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .add-state-btn:hover {
   background: var(--primary-color);
   color: white;
+}
+
+.delete-country-btn {
+  background: #ffebee;
+  border: 1px solid #ef5350;
+  color: #d32f2f;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.delete-country-btn:hover:not(:disabled) {
+  background: #d32f2f;
+  color: white;
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+}
+
+.delete-country-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Accordion lists for States */
@@ -170,6 +202,14 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 1;
+}
+
+.state-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .accordion-arrow {
@@ -206,12 +246,37 @@
   cursor: pointer;
   font-size: 0.8rem;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .add-zone-btn:hover {
   border-color: var(--primary-color);
   color: var(--primary-color);
   background: rgba(123, 17, 19, 0.02);
+}
+
+.delete-state-btn {
+  background: #ffebee;
+  border: 1px solid #ef5350;
+  color: #d32f2f;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.delete-state-btn:hover:not(:disabled) {
+  background: #d32f2f;
+  color: white;
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+}
+
+.delete-state-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .state-accordion-body {
@@ -241,6 +306,11 @@
   font-weight: 600;
   color: #666;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  text-align: left;
+}
+
+.zones-table th:last-child {
+  text-align: center;
 }
 
 .zones-table td {
@@ -269,6 +339,56 @@
 .free-limit-cell {
   font-weight: 600;
   color: #2e7d32;
+}
+
+/* Action Buttons */
+.actions-cell {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.btn-action {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-edit {
+  background: #e3f2fd;
+  color: #1976d2;
+  border: 1px solid #90caf9;
+}
+
+.btn-edit:hover {
+  background: #1976d2;
+  color: white;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
+}
+
+.btn-delete {
+  background: #ffebee;
+  color: #d32f2f;
+  border: 1px solid #ef5350;
+}
+
+.btn-delete:hover:not(:disabled) {
+  background: #d32f2f;
+  color: white;
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+}
+
+.btn-delete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Empty prompt helpers */
@@ -330,6 +450,19 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+}
+
+/* Form input styling for disabled state */
+.form-input:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+  border-color: #ddd;
+  opacity: 0.8;
+}
+
+.form-input:disabled::placeholder {
+  color: #bbb;
 }
 
 @media (max-width: 600px) {

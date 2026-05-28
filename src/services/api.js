@@ -211,11 +211,13 @@ export const updateOrderStatus = async (orderId, status) => {
       "Content-Type": "application/json",
       ...getAuthHeaders(),
     };
-    const response = await fetch(`${BASE_URL}/orders/admin/update_status/${orderId}`, {
-      method: "PUT",
-      headers,
-      body: JSON.stringify({ order_status: status }),
-    });
+    const response = await fetch(
+      `${BASE_URL}/orders/admin/update-status/${orderId}?new_status=${encodeURIComponent(status)}`,
+      {
+        method: "PATCH",
+        headers,
+      }
+    );
     return handleResponse(response);
   } catch (error) {
     console.error("Failed to update order status:", error);
@@ -403,6 +405,76 @@ export const addShippingZone = async (adminId, country, stateName, zoneData) => 
         free_delivery_min_order_value: parseFloat(zoneData.freeDeliveryMinOrderValue),
       },
     }),
+  });
+  return handleResponse(response);
+};
+
+export const updateShippingZone = async (adminId, country, stateName, startZipcode, endZipcode, chargePerKg, freeDeliveryMinOrder) => {
+  const headers = {
+    "Content-Type": "application/json",
+    ...getAuthHeaders(),
+  };
+  const body = {
+    country,
+    state_name: stateName,
+    old_start_zipcode: parseInt(startZipcode),
+    old_end_zipcode: parseInt(endZipcode),
+  };
+  
+  if (chargePerKg !== undefined && chargePerKg !== null) {
+    body.new_charge_per_kg = parseFloat(chargePerKg);
+  }
+  if (freeDeliveryMinOrder !== undefined && freeDeliveryMinOrder !== null) {
+    body.new_free_delivery_min_order_value = parseFloat(freeDeliveryMinOrder);
+  }
+  
+  const response = await fetch(`${BASE_URL}/shipping/admin/${adminId}/edit-zone`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify(body),
+  });
+  return handleResponse(response);
+};
+
+export const deleteShippingZone = async (adminId, country, stateName, startZipcode, endZipcode) => {
+  const headers = {
+    "Content-Type": "application/json",
+    ...getAuthHeaders(),
+  };
+  const response = await fetch(`${BASE_URL}/shipping/admin/${adminId}/delete-zone`, {
+    method: "DELETE",
+    headers,
+    body: JSON.stringify({
+      country,
+      state_name: stateName,
+      start_zipcode: parseInt(startZipcode),
+      end_zipcode: parseInt(endZipcode),
+    }),
+  });
+  return handleResponse(response);
+};
+
+export const deleteShippingState = async (adminId, country, stateName) => {
+  const headers = {
+    "Content-Type": "application/json",
+    ...getAuthHeaders(),
+  };
+  const response = await fetch(`${BASE_URL}/shipping/admin/${adminId}/delete-state`, {
+    method: "DELETE",
+    headers,
+    body: JSON.stringify({
+      country,
+      state_name: stateName,
+    }),
+  });
+  return handleResponse(response);
+};
+
+export const deleteShippingCountry = async (adminId, country) => {
+  const headers = getAuthHeaders();
+  const response = await fetch(`${BASE_URL}/shipping/admin/${adminId}/delete-country?country=${encodeURIComponent(country)}`, {
+    method: "DELETE",
+    headers,
   });
   return handleResponse(response);
 };

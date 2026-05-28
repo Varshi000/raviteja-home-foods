@@ -1,6 +1,7 @@
 import AdminSidebar from "./AdminSidebar";
 import AdminNavbar from "./AdminNavbar";
 import { useAuth } from "../../context/AuthContext";
+import { updateOrderStatus } from "../../services/api";
 import "./AdminOrders.css";
 import React, { useState, useEffect } from "react";
 
@@ -59,6 +60,20 @@ function AdminOrders() {
     }
   }, [token]);
 
+  const handleStatusUpdate = async (orderId, newStatus) => {
+    try {
+      await updateOrderStatus(orderId, newStatus);
+      showSuccessMessage(`Order status updated to ${newStatus}!`);
+      // Update the selected order in state
+      setSelectedOrder(prev => prev ? { ...prev, order_status: newStatus } : null);
+      // Reload orders to reflect the change
+      await loadOrders();
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      showErrorMessage(error.message || "Failed to update order status");
+    }
+  };
+
   const getStatusBadgeClass = (status) => {
     switch (status?.toLowerCase()) {
       case "delivered":
@@ -103,6 +118,8 @@ function AdminOrders() {
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
+        second: "2-digit",
+        timeZone: "Asia/Kolkata"
       });
     } catch {
       return dateString;
@@ -305,9 +322,51 @@ function AdminOrders() {
                                 <div className="details-section">
                                   <h4>Order Information</h4>
                                   <div className="customer-card">
-                                    <p><strong>Order ID:</strong> {order.custom_order_id || order.id}</p>
-                                    <p><strong>Payment ID:</strong> {order.razorpay_payment_id || "N/A"}</p>
+                                    <p><strong>Order ID:</strong> <span className="order-id-value">{order.custom_order_id || order.id}</span></p>
+                                    <p><strong>Internal ID:</strong> {order.id?.slice(-12)}</p>
+                                    <p><strong>Payment ID:</strong> <span className={order.razorpay_payment_id ? "payment-id-value" : "payment-na"}>{order.razorpay_payment_id || "Not yet processed"}</span></p>
                                     <p><strong>Order Date:</strong> {formatDate(order.created_at)}</p>
+                                    <p><strong>Payment Status:</strong> <span className={`payment-status ${order.payment_status}`}>{order.payment_status === "paid" ? "✅ Paid" : "⏳ Pending"}</span></p>
+                                  </div>
+                                </div>
+
+                                {/* Status Update Section */}
+                                <div className="details-section status-update-section">
+                                  <h4>Update Order Status</h4>
+                                  <div className="status-update-controls">
+                                    <div className="current-status">
+                                      <span className="label">Current Status:</span>
+                                      <span className={`status-badge ${getStatusBadgeClass(order.order_status)}`}>
+                                        {getStatusText(order.order_status)}
+                                      </span>
+                                    </div>
+                                    <div className="status-selector">
+                                      <label>Change Status To:</label>
+                                      <select 
+                                        value="" 
+                                        onChange={(e) => {
+                                          if (e.target.value) {
+                                            handleStatusUpdate(order.id, e.target.value);
+                                            e.target.value = "";
+                                          }
+                                        }}
+                                        className="status-dropdown"
+                                      >
+                                        <option value="">-- Select New Status --</option>
+                                        {order.order_status?.toLowerCase() !== "confirmed" && (
+                                          <option value="confirmed">✓ Confirm Order</option>
+                                        )}
+                                        {order.order_status?.toLowerCase() !== "shipped" && (
+                                          <option value="shipped">📦 Mark as Shipped</option>
+                                        )}
+                                        {order.order_status?.toLowerCase() !== "delivered" && (
+                                          <option value="delivered">✅ Mark as Delivered</option>
+                                        )}
+                                        {order.order_status?.toLowerCase() !== "cancelled" && (
+                                          <option value="cancelled">❌ Cancel Order</option>
+                                        )}
+                                      </select>
+                                    </div>
                                   </div>
                                 </div>
                               </div>

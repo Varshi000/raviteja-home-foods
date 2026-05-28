@@ -7,7 +7,11 @@ import {
   getShippingRules, 
   createShippingRules, 
   addShippingState, 
-  addShippingZone 
+  addShippingZone,
+  updateShippingZone,
+  deleteShippingZone,
+  deleteShippingState,
+  deleteShippingCountry
 } from "../../services/api";
 import "./AdminShipping.css";
 
@@ -19,9 +23,10 @@ function AdminShipping() {
   const [success, setSuccess] = useState(null);
   
   // Modal toggle states
-  const [activeModal, setActiveModal] = useState(null); // 'addCountry' | 'addState' | 'addZone'
+  const [activeModal, setActiveModal] = useState(null); // 'addCountry' | 'addState' | 'addZone' | 'editZone'
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedState, setSelectedState] = useState("");
+  const [selectedZone, setSelectedZone] = useState(null);
 
   // Form states
   const [newCountryName, setNewCountryName] = useState("");
@@ -177,6 +182,7 @@ function AdminShipping() {
   const openAddZoneModal = (countryName, stateName) => {
     setSelectedCountry(countryName);
     setSelectedState(stateName);
+    setSelectedZoneId(null);
     setZoneFormData({
       startZipcode: "",
       endZipcode: "",
@@ -184,6 +190,114 @@ function AdminShipping() {
       freeDeliveryMinOrderValue: ""
     });
     setActiveModal("addZone");
+  };
+
+  const openEditZoneModal = (countryName, stateName, zone) => {
+    setSelectedCountry(countryName);
+    setSelectedState(stateName);
+    setSelectedZone(zone);
+    setZoneFormData({
+      startZipcode: zone.start_zipcode.toString(),
+      endZipcode: zone.end_zipcode.toString(),
+      chargePerKg: zone.charge_per_kg.toString(),
+      freeDeliveryMinOrderValue: zone.free_delivery_min_order_value.toString()
+    });
+    setActiveModal("editZone");
+  };
+
+  const handleEditZone = async (e) => {
+    e.preventDefault();
+    const { startZipcode, endZipcode, chargePerKg, freeDeliveryMinOrderValue } = zoneFormData;
+
+    if (!chargePerKg && !freeDeliveryMinOrderValue) {
+      showErrorMessage("Please update at least one field (charge or free delivery threshold)");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const adminId = user?.id || localStorage.getItem("admin_id") || "";
+      await updateShippingZone(
+        adminId, 
+        selectedCountry, 
+        selectedState, 
+        selectedZone.start_zipcode,
+        selectedZone.end_zipcode,
+        chargePerKg || undefined,
+        freeDeliveryMinOrderValue || undefined
+      );
+      await loadShippingRules();
+      setActiveModal(null);
+      setZoneFormData({
+        startZipcode: "",
+        endZipcode: "",
+        chargePerKg: "",
+        freeDeliveryMinOrderValue: ""
+      });
+      showSuccessMessage("Delivery zone updated successfully!");
+    } catch (err) {
+      console.error("Failed to update zone:", err);
+      showErrorMessage(err.message || "Failed to update zone.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteZone = async (countryName, stateName, zone) => {
+    if (!confirm(`Are you sure you want to delete the zone for pincodes ${zone.start_zipcode} - ${zone.end_zipcode}?`)) {
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const adminId = user?.id || localStorage.getItem("admin_id") || "";
+      await deleteShippingZone(adminId, countryName, stateName, zone.start_zipcode, zone.end_zipcode);
+      await loadShippingRules();
+      showSuccessMessage("Delivery zone deleted successfully!");
+    } catch (err) {
+      console.error("Failed to delete zone:", err);
+      showErrorMessage(err.message || "Failed to delete zone.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteState = async (countryName, stateName) => {
+    if (!confirm(`Are you sure you want to delete the state "${stateName}" and all its delivery zones? This action cannot be undone.`)) {
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const adminId = user?.id || localStorage.getItem("admin_id") || "";
+      await deleteShippingState(adminId, countryName, stateName);
+      await loadShippingRules();
+      showSuccessMessage(`State "${stateName}" and all its zones deleted successfully!`);
+    } catch (err) {
+      console.error("Failed to delete state:", err);
+      showErrorMessage(err.message || "Failed to delete state.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteCountry = async (countryName) => {
+    if (!confirm(`Are you sure you want to delete the entire country "${countryName}" and all its states and zones? This action cannot be undone.`)) {
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const adminId = user?.id || localStorage.getItem("admin_id") || "";
+      await deleteShippingCountry(adminId, countryName);
+      await loadShippingRules();
+      showSuccessMessage(`Country "${countryName}" and all its configuration deleted successfully!`);
+    } catch (err) {
+      console.error("Failed to delete country:", err);
+      showErrorMessage(err.message || "Failed to delete country.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Helper stats calculations
@@ -274,12 +388,22 @@ function AdminShipping() {
                       <h2>{config.country}</h2>
                       <span className="state-count">{config.states?.length || 0} states configured</span>
                     </div>
-                    <button 
-                      className="add-state-btn"
-                      onClick={() => openAddStateModal(config.country)}
-                    >
-                      + Add State
-                    </button>
+                    <div className="country-actions">
+                      <button 
+                        className="add-state-btn"
+                        onClick={() => openAddStateModal(config.country)}
+                      >
+                        + Add State
+                      </button>
+                      <button 
+                        className="delete-country-btn"
+                        onClick={() => handleDeleteCountry(config.country)}
+                        title="Delete entire country and all states"
+                        disabled={submitting}
+                      >
+                        🗑 Delete Country
+                      </button>
+                    </div>
                   </div>
 
                   <div className="states-list-section">
@@ -297,15 +421,28 @@ function AdminShipping() {
                                 <h4>{state.state_name}</h4>
                                 <span className="zone-count-badge">{state.zones?.length || 0} zones</span>
                               </div>
-                              <button 
-                                className="add-zone-btn"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openAddZoneModal(config.country, state.state_name);
-                                }}
-                              >
-                                + Add Zone
-                              </button>
+                              <div className="state-actions">
+                                <button 
+                                  className="add-zone-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openAddZoneModal(config.country, state.state_name);
+                                  }}
+                                >
+                                  + Add Zone
+                                </button>
+                                <button 
+                                  className="delete-state-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteState(config.country, state.state_name);
+                                  }}
+                                  title="Delete state and all zones"
+                                  disabled={submitting}
+                                >
+                                  🗑 Delete State
+                                </button>
+                              </div>
                             </div>
 
                             {isExpanded && (
@@ -319,6 +456,7 @@ function AdminShipping() {
                                           <th>End Pincode</th>
                                           <th>Rate (₹ per KG)</th>
                                           <th>Min Bill for Free Delivery</th>
+                                          <th>Actions</th>
                                         </tr>
                                       </thead>
                                       <tbody>
@@ -329,6 +467,23 @@ function AdminShipping() {
                                             <td className="charge-cell">₹{zone.charge_per_kg}</td>
                                             <td className="free-limit-cell">
                                               {zone.free_delivery_min_order_value > 0 ? `₹${zone.free_delivery_min_order_value}` : "N/A (Paid only)"}
+                                            </td>
+                                            <td className="actions-cell">
+                                              <button 
+                                                className="btn-action btn-edit"
+                                                onClick={() => openEditZoneModal(config.country, state.state_name, zone)}
+                                                title="Edit zone"
+                                              >
+                                                ✎ Edit
+                                              </button>
+                                              <button 
+                                                className="btn-action btn-delete"
+                                                onClick={() => handleDeleteZone(config.country, state.state_name, zone)}
+                                                title="Delete zone"
+                                                disabled={submitting}
+                                              >
+                                                🗑 Delete
+                                              </button>
                                             </td>
                                           </tr>
                                         ))}
@@ -509,6 +664,79 @@ function AdminShipping() {
                 <button type="button" className="btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
                 <button type="submit" className="btn-primary" disabled={submitting}>
                   {submitting ? "Adding..." : "Add Zone"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Zone Modal */}
+      {activeModal === "editZone" && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Edit Zipcode delivery zone</h2>
+              <button className="close-modal" onClick={() => setActiveModal(null)}>✕</button>
+            </div>
+            <form onSubmit={handleEditZone}>
+              <div className="modal-body">
+                <p><strong>Target:</strong> {selectedCountry} › {selectedState}</p>
+                
+                <div className="form-row-group">
+                  <div className="form-group">
+                    <label>Start Zipcode (Pincode)</label>
+                    <input
+                      type="number"
+                      disabled
+                      value={zoneFormData.startZipcode}
+                      className="form-input"
+                      placeholder="e.g. 500001"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>End Zipcode (Pincode)</label>
+                    <input
+                      type="number"
+                      disabled
+                      value={zoneFormData.endZipcode}
+                      className="form-input"
+                      placeholder="e.g. 500100"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row-group">
+                  <div className="form-group">
+                    <label>Charge per KG (INR) - Optional</label>
+                    <input
+                      type="number"
+                      value={zoneFormData.chargePerKg}
+                      onChange={(e) => setZoneFormData({...zoneFormData, chargePerKg: e.target.value})}
+                      className="form-input"
+                      placeholder="Leave empty to keep current value"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Min Bill for Free Delivery (INR) - Optional</label>
+                    <input
+                      type="number"
+                      value={zoneFormData.freeDeliveryMinOrderValue}
+                      onChange={(e) => setZoneFormData({...zoneFormData, freeDeliveryMinOrderValue: e.target.value})}
+                      className="form-input"
+                      placeholder="Leave empty to keep current value"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn-secondary" onClick={() => setActiveModal(null)}>Cancel</button>
+                <button type="submit" className="btn-primary" disabled={submitting}>
+                  {submitting ? "Updating..." : "Update Zone"}
                 </button>
               </div>
             </form>
