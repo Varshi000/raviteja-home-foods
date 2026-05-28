@@ -8,7 +8,8 @@ import {
   FaSignOutAlt,
   FaStore,
   FaTruck,
-  FaTicketAlt
+  FaTicketAlt,
+  FaExclamationCircle
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import "./AdminSidebar.css";
@@ -23,13 +24,22 @@ function AdminSidebar() {
     { icon: <FaClipboardList />, label: "Orders", path: "/admin/orders" },
     { icon: <FaTruck />, label: "Shipping", path: "/admin/shipping" },
     { icon: <FaTicketAlt />, label: "Coupons", path: "/admin/coupons" },
+    { icon: <FaExclamationCircle />, label: "Issues", path: "/admin/issues" },
   ];
 
   return (
     <div className="admin-sidebar">
       <div className="admin-sidebar-header">
-        <div className="admin-logo">
-          <FaStore /><span>Admin Panel</span>
+        <div className="admin-logo-container">
+          <div className="admin-logo-wrapper">
+            <img src="/images/logo.png" alt="Raviteja Home Foods" className="admin-logo-img" />
+          </div>
+          <div className="admin-branding">
+            <div className="admin-brand-text">
+              <span className="admin-brand-main">Admin</span>
+              <span className="admin-brand-sub">Panel</span>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -36,41 +36,143 @@
   background: #d2a355;
 }
 
-/* Sidebar Header */
+/* Sidebar Header - Premium Section */
 .admin-sidebar-header {
-  padding: 30px 24px;
-  min-height: 110px;
-
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-
+  padding: 28px 20px;
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(22, 33, 62, 0.98) 100%);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(210, 163, 85, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
-.admin-logo {
+
+/* Ambient Glow Effect */
+.admin-sidebar-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(210, 163, 85, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Premium Logo Container */
+.admin-logo-container {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 10px;
-  white-space: nowrap;
+  gap: 16px;
+  width: 100%;
+  position: relative;
+  z-index: 2;
 }
 
-.admin-logo svg {
-  font-size: 26px;
-  color: #d2a355;
+/* Logo Wrapper - Glassmorphism Effect */
+.admin-logo-wrapper {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(210, 163, 85, 0.15) 0%, rgba(210, 163, 85, 0.08) 100%);
+  border: 1px solid rgba(210, 163, 85, 0.25);
+  border-radius: 14px;
+  backdrop-filter: blur(12px);
+  box-shadow: 
+    0 8px 32px rgba(210, 163, 85, 0.1),
+    0 0 20px rgba(210, 163, 85, 0.05),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
 }
 
-.admin-logo span {
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1;
-  white-space: nowrap;
+.admin-logo-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 14px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(210, 163, 85, 0.3) 0%, rgba(210, 163, 85, 0.1) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
 
-  background: linear-gradient(135deg, #fff 0%, #d2a355 100%);
+.admin-logo-wrapper:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, rgba(210, 163, 85, 0.25) 0%, rgba(210, 163, 85, 0.15) 100%);
+  border-color: rgba(210, 163, 85, 0.4);
+  box-shadow: 
+    0 12px 40px rgba(210, 163, 85, 0.15),
+    0 0 30px rgba(210, 163, 85, 0.08),
+    inset 0 1px 2px rgba(255, 255, 255, 0.15);
+}
+
+.admin-logo-wrapper:hover::before {
+  opacity: 1;
+}
+
+/* Logo Image */
+.admin-logo-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(210, 163, 85, 0.2));
+  transition: filter 0.4s ease;
+}
+
+.admin-logo-wrapper:hover .admin-logo-img {
+  filter: drop-shadow(0 4px 12px rgba(210, 163, 85, 0.3));
+}
+
+/* Branding Section */
+.admin-branding {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.admin-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.2;
+}
+
+/* Main Brand Text - "Admin" */
+.admin-brand-main {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: #ffffff;
+  text-transform: capitalize;
+  display: block;
+  line-height: 1.1;
+}
+
+/* Sub Brand Text - "Panel" */
+.admin-brand-sub {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  display: block;
+  background: linear-gradient(135deg, #d2a355 0%, #f0c989 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  line-height: 1.1;
 }
 
 /* Navigation Menu */
