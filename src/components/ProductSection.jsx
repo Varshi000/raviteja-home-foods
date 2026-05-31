@@ -1,13 +1,15 @@
 // src/components/ProductSection.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import ProductCard from "./ProductCard";
 import { fetchActiveProducts } from "../services/api";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import "./ProductSection.css";
 
 function ProductSection() {
   const [newArrivals, setNewArrivals] = useState([]);
   const [loading, setLoading] = useState(true);
+  const scrollRef = useRef(null);
 
   useEffect(() => {
     loadNewArrivals();
@@ -17,18 +19,29 @@ function ProductSection() {
     setLoading(true);
     try {
       const allProducts = await fetchActiveProducts();
-      console.log("All products for new arrivals:", allProducts);
       
-      // Get the latest 4 products (new arrivals)
+      // Get the latest 20 products (new arrivals)
       // Assuming products are returned in order of creation
-      // You can also sort by created_at if available
-      const latestProducts = allProducts.slice(0, 4);
+      const latestProducts = allProducts.slice(0, 20);
       setNewArrivals(latestProducts);
     } catch (err) {
       console.error("Failed to load new arrivals:", err);
       setNewArrivals([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const scrollLeft = () => {
+    if (scrollRef.current) {
+      // scroll left by about one card width (300px) + gap
+      scrollRef.current.scrollBy({ left: -330, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 330, behavior: "smooth" });
     }
   };
 
@@ -40,7 +53,7 @@ function ProductSection() {
             <h2>NEW ARRIVALS</h2>
             <Link to="/all-products" className="view-all-link">VIEW ALL</Link>
           </div>
-          <div className="product-grid loading-grid">
+          <div className="product-slider loading-grid">
             <div className="loading-spinner"></div>
             <p>Loading new arrivals...</p>
           </div>
@@ -50,7 +63,7 @@ function ProductSection() {
   }
 
   if (newArrivals.length === 0) {
-    return null; // Don't show section if no products
+    return null;
   }
 
   return (
@@ -64,14 +77,23 @@ function ProductSection() {
           </Link>
         </div>
 
-        {/* PRODUCTS GRID */}
-        <div className="product-grid">
-          {newArrivals.map((item) => (
-            <ProductCard
-              key={item.id || item._id}
-              item={item}
-            />
-          ))}
+        {/* SLIDER WRAPPER */}
+        <div className="product-slider-wrapper">
+          <button className="slider-btn left-btn" onClick={scrollLeft} aria-label="Scroll left">
+            <FaChevronLeft />
+          </button>
+          
+          <div className="product-slider" ref={scrollRef}>
+            {newArrivals.map((item) => (
+              <div className="slider-item" key={item.id || item._id}>
+                <ProductCard item={item} />
+              </div>
+            ))}
+          </div>
+
+          <button className="slider-btn right-btn" onClick={scrollRight} aria-label="Scroll right">
+            <FaChevronRight />
+          </button>
         </div>
       </div>
     </section>
