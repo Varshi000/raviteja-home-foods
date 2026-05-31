@@ -16,6 +16,7 @@ import {
   FaPhone,
   FaShoppingCart,
   FaCreditCard,
+  FaTrash,
 } from "react-icons/fa";
 import "./AdminIssues.css";
 
@@ -109,6 +110,34 @@ function AdminIssues() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
+  // --- View Issue Details ---
+  const handleViewIssue = async (issue) => {
+    // Open the modal immediately with the summary data to avoid UI delay
+    setSelectedIssue(issue);
+    
+    const issueId = issue.issue_id || issue._id || issue.id;
+    try {
+      const response = await fetch(`${BASE_URL}/issues/${issueId}`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch full issue details");
+      }
+      const fullIssue = await response.json();
+      // Update the modal with the complete data
+      setSelectedIssue((prev) => {
+        // If the user hasn't closed the modal yet, update it
+        if (prev && (prev.issue_id || prev._id || prev.id) === issueId) {
+          return fullIssue;
+        }
+        return prev;
+      });
+    } catch (err) {
+      console.error("Failed to load full issue details:", err);
+      // We don't show a huge error because they at least see the summary data
+    }
+  };
+
   // --- Update Status ---
   const handleUpdateStatus = async (issue, newStatus) => {
     const issueId = issue.issue_id || issue._id || issue.id;
@@ -152,6 +181,41 @@ function AdminIssues() {
     } catch (err) {
       console.error("Status update failed:", err);
       showErrorMessage(err.message || "Failed to update issue status");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  // --- Delete Issue ---
+  const handleDeleteIssue = async (issueId) => {
+    if (!window.confirm("Are you sure you want to delete this issue? This action cannot be undone.")) {
+      return;
+    }
+
+    setUpdatingId(issueId);
+    try {
+      const response = await fetch(`${BASE_URL}/issues/${issueId}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.detail || "Failed to delete issue");
+      }
+
+      showSuccessMessage("Issue successfully deleted.");
+      
+      // Update local state by removing the deleted issue
+      setIssues((prev) => prev.filter((iss) => (iss.issue_id || iss._id || iss.id) !== issueId));
+      
+      // If the deleted issue was open in the modal, close it
+      if (selectedIssue && (selectedIssue.issue_id || selectedIssue._id || selectedIssue.id) === issueId) {
+        setSelectedIssue(null);
+      }
+    } catch (err) {
+      console.error("Delete issue failed:", err);
+      showErrorMessage(err.message || "Failed to delete issue");
     } finally {
       setUpdatingId(null);
     }
@@ -388,7 +452,7 @@ function AdminIssues() {
                           <td>
                             <button
                               className="view-issue-btn"
-                              onClick={() => setSelectedIssue(issue)}
+                              onClick={() => handleViewIssue(issue)}
                               title="View Details"
                             >
                               <FaEye />
@@ -556,6 +620,28 @@ function AdminIssues() {
                     Reopen as Pending
                   </button>
                 )}
+                
+                <button
+                  className="delete-issue-btn large"
+                  onClick={() =>
+                    handleDeleteIssue(
+                      selectedIssue.issue_id ||
+                      selectedIssue._id ||
+                      selectedIssue.id
+                    )
+                  }
+                  disabled={
+                    updatingId ===
+                    (selectedIssue.issue_id ||
+                      selectedIssue._id ||
+                      selectedIssue.id)
+                  }
+                  style={{ backgroundColor: '#dc2626', color: 'white', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
+                >
+                  <FaTrash />
+                  Delete Issue
+                </button>
+
                 <button
                   className="modal-cancel-btn"
                   onClick={() => setSelectedIssue(null)}

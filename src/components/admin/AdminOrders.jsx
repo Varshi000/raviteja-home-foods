@@ -45,6 +45,7 @@ function AdminOrders() {
 
       const data = await response.json();
       console.log("Orders loaded:", data);
+      console.log("First order structure:", data.data?.[0]);
       setOrders(data.data || []);
     } catch (err) {
       console.error("Failed to load orders:", err);
@@ -312,7 +313,8 @@ function AdminOrders() {
                                   <div className="address-card">
                                     <p><strong>{order.shipping_address?.name}</strong></p>
                                     <p>{order.shipping_address?.address_line}</p>
-                                    <p>{order.shipping_address?.city}, {order.shipping_address?.state}</p>
+                                    <p>{order.shipping_address?.city}{order.shipping_address?.state ? `, ${order.shipping_address.state}` : ""}</p>
+                                    {order.shipping_address?.country && <p>{order.shipping_address.country}</p>}
                                     <p>Pincode: {order.shipping_address?.pincode}</p>
                                     <p>Mobile: {order.shipping_address?.mobile}</p>
                                   </div>
@@ -323,8 +325,7 @@ function AdminOrders() {
                                   <h4>Order Information</h4>
                                   <div className="customer-card">
                                     <p><strong>Order ID:</strong> <span className="order-id-value">{order.custom_order_id || order.id}</span></p>
-                                    <p><strong>Internal ID:</strong> {order.id?.slice(-12)}</p>
-                                    <p><strong>Payment ID:</strong> <span className={order.razorpay_payment_id ? "payment-id-value" : "payment-na"}>{order.razorpay_payment_id || "Not yet processed"}</span></p>
+                                    <p><strong>Payment ID:</strong> <span className={order.razorpay_payment_id || order.payment_id ? "payment-id-value" : "payment-na"}>{order.razorpay_payment_id || order.payment_id || "Not yet processed"}</span></p>
                                     <p><strong>Order Date:</strong> {formatDate(order.created_at)}</p>
                                     <p><strong>Payment Status:</strong> <span className={`payment-status ${order.payment_status}`}>{order.payment_status === "paid" ? "✅ Paid" : "⏳ Pending"}</span></p>
                                   </div>

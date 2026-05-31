@@ -1,208 +1,275 @@
-import { useState } from "react";
+// src/components/ReportIssuePage.jsx
+import { useState, useRef, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import { createIssue } from "../services/api";
 import "./ReportIssuePage.css";
 
-const issueTypes = [
-  "Refund/Return",
-  "Cancel Order",
-  "Replace Order",
-  "Wrong Item Delivered",
-  "Other",
+const ISSUE_TYPES = [
+  { id: "Refund/Return",  label: "Refund / Return",  requiresImage: true  },
+  { id: "Cancel Order",   label: "Cancel Order",      requiresImage: false },
+  { id: "Replace Order",  label: "Replace Order",     requiresImage: true  },
 ];
 
-function ReportIssuePage() {
+export default function ReportIssuePage() {
   const { user } = useAuth();
-  const [orderId, setOrderId] = useState("");
-  const [paymentId, setPaymentId] = useState("");
-  const [email, setEmail] = useState(user?.email || "");
-  const [mobile, setMobile] = useState("");
-  const [issueType, setIssueType] = useState(issueTypes[0]);
+
+  const [orderId,        setOrderId]        = useState("");
+  const [paymentId,      setPaymentId]      = useState("");
+  const [email,          setEmail]          = useState(user?.email || "");
+  const [mobile,         setMobile]         = useState(user?.mobile || "");
+  const [issueType,      setIssueType]      = useState("");
   const [detailedReason, setDetailedReason] = useState("");
-  const [files, setFiles] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [createdIssue, setCreatedIssue] = useState(null);
+  const [files,          setFiles]          = useState([]);
+  const [previews,       setPreviews]       = useState([]);
+  const [loading,        setLoading]        = useState(false);
+  const [error,          setError]          = useState("");
+  const [ticket,         setTicket]         = useState(null);
+  const [dragging,       setDragging]       = useState(false);
 
-  const handleFileChange = (event) => {
-    setFiles(Array.from(event.target.files));
+  const fileRef = useRef(null);
+  const selected = ISSUE_TYPES.find(t => t.id === issueType);
+
+  /* ── file helpers ─────────────────────────────── */
+  const addFiles = (incoming) => {
+    const imgs = Array.from(incoming).filter(f => f.type.startsWith("image/"));
+    const merged = [...files, ...imgs].slice(0, 5);
+    setFiles(merged);
+    merged.forEach((file, i) => {
+      if (previews[i]) return;
+      const r = new FileReader();
+      r.onload = e => setPreviews(p => { const a = [...p]; a[i] = e.target.result; return a; });
+      r.readAsDataURL(file);
+    });
   };
 
-  const resetForm = () => {
-    setOrderId("");
-    setPaymentId("");
-    setMobile("");
-    setIssueType(issueTypes[0]);
-    setDetailedReason("");
-    setFiles([]);
+  const removeFile = (i) => {
+    setFiles(f => f.filter((_, x) => x !== i));
+    setPreviews(p => p.filter((_, x) => x !== i));
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setErrorMessage(null);
-    setSuccessMessage(null);
-    setCreatedIssue(null);
+  const onDrop = useCallback((e) => {
+    e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files);
+  }, [files]); // eslint-disable-line
 
-    if (!orderId || !paymentId || !email || !issueType || !detailedReason) {
-      setErrorMessage("Please fill in all required fields.");
-      return;
-    }
+  /* ── submit ───────────────────────────────────── */
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!issueType)                          return setError("Please select an issue type.");
+    if (!orderId.trim())                     return setError("Order ID is required.");
+    if (!paymentId.trim())                   return setError("Payment ID is required.");
+    if (!email.trim())                       return setError("Email is required.");
+    if (mobile.trim().length < 10)           return setError("Enter a valid 10-digit mobile number.");
+    if (detailedReason.trim().length < 10)   return setError("Describe the issue (min 10 characters).");
+    if (selected?.requiresImage && !files.length)
+      return setError(`Images are required for "${selected.label}".`);
 
     try {
       setLoading(true);
-      const formData = new FormData();
-      formData.append("order_id", orderId);
-      formData.append("payment_id", paymentId);
-      formData.append("email", email);
-      formData.append("mobile", mobile);
-      formData.append("issue_type", issueType);
-      formData.append("detailed_reason", detailedReason);
-
-      files.forEach((file) => {
-        formData.append("files", file);
-      });
-
-      const response = await createIssue(formData);
-      setSuccessMessage("Your issue has been submitted successfully.");
-      setCreatedIssue(response);
-      resetForm();
-    } catch (error) {
-      setErrorMessage(error.message || "Unable to submit issue. Please try again.");
+      const fd = new FormData();
+      fd.append("order_id",        orderId.trim());
+      fd.append("payment_id",      paymentId.trim());
+      fd.append("email",           email.trim());
+      fd.append("mobile",          mobile.trim());
+      fd.append("issue_type",      issueType);
+      fd.append("detailed_reason", detailedReason.trim());
+      files.forEach(f => fd.append("files", f));
+      const res = await createIssue(fd);
+      setTicket(res);
+    } catch (err) {
+      setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  const reset = () => {
+    setOrderId(""); setPaymentId(""); setMobile(user?.mobile || "");
+    setIssueType(""); setDetailedReason(""); setFiles([]); setPreviews([]);
+    setError(""); setTicket(null);
+  };
+
+  /* ── success screen ───────────────────────────── */
+  if (ticket) {
+    return (
+      <div className="ri-page">
+        <div className="ri-success">
+          <div className="ri-success-icon">✓</div>
+          <h1>Issue Submitted</h1>
+          <p>We'll review your request and get back to you within 2–4 business days.</p>
+          <div className="ri-ticket">
+            <div className="ri-ticket-row"><span>Ticket ID</span><strong>#{ticket.issue_id || "—"}</strong></div>
+            <div className="ri-ticket-row"><span>Type</span><strong>{ticket.issue_type}</strong></div>
+            <div className="ri-ticket-row"><span>Payment ID</span><strong>{ticket.payment_id || paymentId}</strong></div>
+            <div className="ri-ticket-row"><span>Mobile</span><strong>{ticket.mobile || mobile}</strong></div>
+            <div className="ri-ticket-row"><span>Status</span><span className="ri-status">{ticket.status || "Pending"}</span></div>
+          </div>
+          <button className="ri-btn" onClick={reset}>Submit Another</button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── form ─────────────────────────────────────── */
   return (
-    <section className="report-issue-page">
-      
+    <div className="ri-page">
+      <div className="ri-header">
+        <h1>Report a Problem</h1>
+        <p>Tell us what went wrong and we'll make it right.</p>
+      </div>
 
-      <div className="report-issue-content">
-        <div className="report-issue-card">
-          <h2>Submit an Issue</h2>
-          <p className="report-issue-note">
-            Required fields are marked with <span>*</span>.
-          </p>
+      <div className="ri-card">
+        <form onSubmit={handleSubmit} noValidate>
 
-          {successMessage && (
-            <div className="report-issue-alert success">
-              {successMessage}
-            </div>
-          )}
-
-          {errorMessage && (
-            <div className="report-issue-alert error">
-              {errorMessage}
-            </div>
-          )}
-
-          <form className="report-issue-form" onSubmit={handleSubmit}>
-            <label>
-              Order ID <span>*</span>
+          {/* Order & Payment */}
+          <div className="ri-row">
+            <div className="ri-group">
+              <label className="ri-label" htmlFor="ri-order">Order ID <span>*</span></label>
               <input
+                id="ri-order"
+                className="ri-input"
                 type="text"
+                placeholder="e.g. ORD-20240101-XXXX"
                 value={orderId}
-                onChange={(e) => setOrderId(e.target.value)}
-                placeholder="Enter your order id"
-                required
+                onChange={e => setOrderId(e.target.value)}
               />
-            </label>
-
-            <label>
-              Payment ID <span>*</span>
+            </div>
+            <div className="ri-group">
+              <label className="ri-label" htmlFor="ri-pay">Payment ID <span>*</span></label>
               <input
+                id="ri-pay"
+                className="ri-input"
                 type="text"
+                placeholder="e.g. pay_XXXXXXXXXX"
                 value={paymentId}
-                onChange={(e) => setPaymentId(e.target.value)}
-                placeholder="Enter your payment id"
-                required
+                onChange={e => setPaymentId(e.target.value)}
               />
-            </label>
+            </div>
+          </div>
 
-            <label>
-              Email <span>*</span>
+          {/* Email & Mobile */}
+          <div className="ri-row">
+            <div className="ri-group">
+              <label className="ri-label" htmlFor="ri-email">Email <span>*</span></label>
               <input
+                id="ri-email"
+                className="ri-input"
                 type="email"
+                placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
+                onChange={e => setEmail(e.target.value)}
               />
-            </label>
-
-            <label>
-              Mobile
+            </div>
+            <div className="ri-group">
+              <label className="ri-label" htmlFor="ri-mobile">Mobile <span>*</span></label>
               <input
+                id="ri-mobile"
+                className="ri-input"
                 type="tel"
+                placeholder="10-digit number"
+                maxLength={10}
                 value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
-                placeholder="Enter your mobile number"
+                onChange={e => setMobile(e.target.value.replace(/\D/g, ""))}
               />
+            </div>
+          </div>
+
+          {/* Issue Type */}
+          <div className="ri-group">
+            <label className="ri-label">Issue Type <span>*</span></label>
+            <div className="ri-types">
+              {ISSUE_TYPES.map(t => (
+                <button
+                  key={t.id}
+                  type="button"
+                  className={`ri-type${issueType === t.id ? " ri-type-active" : ""}`}
+                  onClick={() => { setIssueType(t.id); setError(""); }}
+                >
+                  {t.label}
+                  {t.requiresImage && <span className="ri-img-dot" title="Images required" />}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="ri-group">
+            <label className="ri-label" htmlFor="ri-reason">
+              Describe the Issue <span>*</span>
+            </label>
+            <textarea
+              id="ri-reason"
+              className="ri-textarea"
+              rows={4}
+              placeholder="What happened? Please describe in detail…"
+              value={detailedReason}
+              onChange={e => setDetailedReason(e.target.value)}
+            />
+          </div>
+
+          {/* Images — shown only after issue type is picked */}
+          {issueType && (
+          <div className="ri-group">
+            <label className="ri-label">
+              Photos
+              {selected?.requiresImage
+                ? <span className="ri-required-note"> — required</span>
+                : <span className="ri-optional-note"> — optional</span>}
             </label>
 
-            <label>
-              Issue Type <span>*</span>
-              <select
-                value={issueType}
-                onChange={(e) => setIssueType(e.target.value)}
-                required
-              >
-                {issueTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              Describe the issue <span>*</span>
-              <textarea
-                value={detailedReason}
-                onChange={(e) => setDetailedReason(e.target.value)}
-                placeholder="Please explain the problem in detail"
-                rows={5}
-                required
-              />
-            </label>
-
-            <label>
-              Attach files (optional)
+            <div
+              className={`ri-drop${dragging ? " ri-drop-active" : ""}`}
+              onClick={() => fileRef.current?.click()}
+              onDragOver={e => { e.preventDefault(); setDragging(true); }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={onDrop}
+            >
               <input
+                ref={fileRef}
                 type="file"
                 multiple
                 accept="image/*"
-                onChange={handleFileChange}
+                style={{ display: "none" }}
+                onChange={e => addFiles(e.target.files)}
               />
-            </label>
+              <span className="ri-drop-icon">↑</span>
+              <span>Click or drag images here</span>
+              <small>PNG, JPG, WEBP — up to 5 photos</small>
+            </div>
 
             {files.length > 0 && (
-              <div className="report-issue-files">
-                {files.map((file) => (
-                  <span key={file.name}>{file.name}</span>
+              <div className="ri-previews">
+                {files.map((f, i) => (
+                  <div key={i} className="ri-preview">
+                    <img src={previews[i] || ""} alt={f.name} />
+                    <button type="button" className="ri-remove" onClick={() => removeFile(i)}>✕</button>
+                  </div>
                 ))}
+                {files.length < 5 && (
+                  <button type="button" className="ri-add-more" onClick={() => fileRef.current?.click()}>
+                    + Add
+                  </button>
+                )}
               </div>
             )}
+          </div>
+          )} {/* end issueType && Photos */}
 
-            <button type="submit" className="report-issue-submit" disabled={loading}>
-              {loading ? "Submitting..." : "Submit Issue"}
-            </button>
-          </form>
-
-          {createdIssue && (
-            <div className="report-issue-result">
-              <h3>Issue Created</h3>
-              <p>
-                Your issue id: <strong>{createdIssue.issue_id || createdIssue.id || "—"}</strong>
-              </p>
-              <p>Status: <strong>{createdIssue.status || "Pending"}</strong></p>
+          {/* Error */}
+          {error && (
+            <div className="ri-error" role="alert">
+              {error}
             </div>
           )}
-        </div>
+
+          {/* Submit */}
+          <button type="submit" className="ri-btn ri-btn-full" disabled={loading} id="ri-submit">
+            {loading ? <><span className="ri-spin" /> Submitting…</> : "Submit Issue"}
+          </button>
+
+        </form>
       </div>
-    </section>
+    </div>
   );
 }
-
-export default ReportIssuePage;
