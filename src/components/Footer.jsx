@@ -94,6 +94,10 @@ function Footer() {
             Privacy Policy
           </Link>
 
+          <Link to="/return-refund-policy" onClick={scrollToTop}>
+            Return & Refund Policy
+          </Link>
+
           <Link to="/terms" onClick={scrollToTop}>
             Terms & Conditions
           </Link>

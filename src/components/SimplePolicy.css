@@ -1,0 +1,104 @@
+.policy-page-wrapper {
+  background-color: #f9fafb;
+  min-height: 100vh;
+  padding: 120px 20px 80px;
+}
+
+.simple-policy-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 50px 60px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+  font-family: inherit;
+  color: #374151;
+}
+
+.simple-policy-container h1 {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 30px;
+  color: #111827;
+  text-align: center;
+  border-bottom: 2px solid #f3f4f6;
+  padding-bottom: 20px;
+}
+
+.simple-policy-container .policy-intro {
+  font-size: 18px;
+  line-height: 1.8;
+  color: #4b5563;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.simple-policy-container h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-top: 40px;
+  margin-bottom: 16px;
+  color: #d62828;
+}
+
+.simple-policy-container p {
+  font-size: 16px;
+  line-height: 1.8;
+  margin-bottom: 16px;
+  color: #4b5563;
+}
+
+.simple-policy-container ul {
+  margin-bottom: 24px;
+  padding-left: 20px;
+}
+
+.simple-policy-container li {
+  font-size: 16px;
+  line-height: 1.8;
+  color: #4b5563;
+  margin-bottom: 8px;
+  list-style-type: disc;
+}
+
+.simple-policy-container strong {
+  color: #111827;
+  font-weight: 600;
+}
+
+.simple-policy-container a {
+  color: #d62828;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.simple-policy-container a:hover {
+  text-decoration: underline;
+}
+
+.contact-details {
+  background-color: #f9fafb;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 20px;
+  line-height: 1.8;
+  border: 1px solid #e5e7eb;
+}
+
+@media (max-width: 768px) {
+  .policy-page-wrapper {
+    padding: 100px 15px 40px;
+  }
+  
+  .simple-policy-container {
+    padding: 30px 20px;
+  }
+  
+  .simple-policy-container h1 {
+    font-size: 28px;
+  }
+  
+  .simple-policy-container .policy-intro {
+    font-size: 16px;
+  }
+}

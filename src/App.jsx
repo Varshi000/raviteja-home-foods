@@ -24,6 +24,7 @@ import PrivacyPolicy from "./components/PrivacyPolicy";
 import TermsPage from "./components/TermsPage";
 import ReportIssuePage from "./components/ReportIssuePage";
 import WelcomePopup from "./components/WelcomePopup";
+import ReturnRefundPolicy from "./components/ReturnRefundPolicy";
 import LoginPage from "./components/LoginPage";
 import CheckoutPage from "./components/CheckoutPage";
 import AllProducts from "./components/AllProducts";
@@ -162,6 +163,12 @@ function App() {
         <Route path="/privacy-policy" element={
           <PublicLayout>
             <PrivacyPolicy />
+          </PublicLayout>
+        } />
+
+        <Route path="/return-refund-policy" element={
+          <PublicLayout>
+            <ReturnRefundPolicy />
           </PublicLayout>
         } />
         
