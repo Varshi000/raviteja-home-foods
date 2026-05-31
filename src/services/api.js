@@ -181,10 +181,13 @@ export const getGuestOrders = async (guestId) => {
   }
 };
 
-export const getUserOrders = async (userEmail) => {
+export const getUserOrders = async () => {
   try {
     const headers = getAuthHeaders();
-    const response = await fetch(`${BASE_URL}/orders/user/${userEmail}`, { headers });
+    const response = await fetch(`${BASE_URL}/user-login/orders`, { 
+      method: "GET",
+      headers 
+    });
     const data = await handleResponse(response);
     return data.orders || data.data || [];
   } catch (error) {
@@ -301,6 +304,23 @@ export const createIssue = async (formData) => {
   return handleResponse(response);
 };
 
+export const fetchIssueById = async (issueId) => {
+  const headers = getAuthHeaders();
+  const response = await fetch(`${BASE_URL}/issues/${issueId}`, {
+    method: "GET",
+    headers,
+  });
+  return handleResponse(response);
+};
+
+export const deleteIssue = async (issueId) => {
+  const headers = getAuthHeaders();
+  const response = await fetch(`${BASE_URL}/issues/${issueId}`, {
+    method: "DELETE",
+    headers,
+  });
+  return handleResponse(response);
+};
 // ==================== ADMIN AUTH API ====================
 
 export const adminLogin = async (email, password) => {
@@ -481,10 +501,16 @@ export const deleteShippingState = async (adminId, country, stateName) => {
 };
 
 export const deleteShippingCountry = async (adminId, country) => {
-  const headers = getAuthHeaders();
-  const response = await fetch(`${BASE_URL}/shipping/admin/${adminId}/delete-country?country=${encodeURIComponent(country)}`, {
+  const headers = {
+    "Content-Type": "application/json",
+    ...getAuthHeaders(),
+  };
+  const response = await fetch(`${BASE_URL}/shipping/admin/${adminId}/delete-country`, {
     method: "DELETE",
     headers,
+    body: JSON.stringify({
+      country,
+    }),
   });
   return handleResponse(response);
 };

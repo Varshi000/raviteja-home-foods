@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getGuestOrders, createReview } from "../services/api";
+import { getGuestOrders, getUserOrders, createReview } from "../services/api";
 import "./MyOrders.css";
 
 function MyOrders() {
@@ -31,15 +31,23 @@ function MyOrders() {
     setLoading(true);
     setError(null);
     try {
-      const guestId = localStorage.getItem("guest_id");
-      const data = await getGuestOrders(guestId);
-      setOrders(data || []);
+      // If user is logged in with email, fetch their orders
+      if (user && user.email && user.role === "user") {
+        const data = await getUserOrders();
+        setOrders(data || []);
+      } else {
+        // Otherwise use guest_id for guest orders
+        const guestId = localStorage.getItem("guest_id");
+        const data = await getGuestOrders(guestId);
+        setOrders(data || []);
+      }
     } catch (err) {
       setError("Unable to load your orders. Please try again.");
+      console.error("Error loading orders:", err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (!isAuthenticated) {

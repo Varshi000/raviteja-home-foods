@@ -134,8 +134,8 @@ function AdminShipping() {
     e.preventDefault();
     const { startZipcode, endZipcode, chargePerKg, freeDeliveryMinOrderValue } = zoneFormData;
 
-    if (!startZipcode || !endZipcode || !chargePerKg || !freeDeliveryMinOrderValue) {
-      showErrorMessage("All zone fields are required");
+    if (!startZipcode || !endZipcode || !chargePerKg) {
+      showErrorMessage("Start Pincode, End Pincode, and Charge per KG are required");
       return;
     }
 
@@ -182,7 +182,7 @@ function AdminShipping() {
   const openAddZoneModal = (countryName, stateName) => {
     setSelectedCountry(countryName);
     setSelectedState(stateName);
-    setSelectedZoneId(null);
+    setSelectedZone(null);
     setZoneFormData({
       startZipcode: "",
       endZipcode: "",
@@ -646,14 +646,13 @@ function AdminShipping() {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Min Bill for Free Delivery (INR) *</label>
+                    <label>Min Bill for Free Delivery (INR)</label>
                     <input
                       type="number"
-                      required
                       value={zoneFormData.freeDeliveryMinOrderValue}
                       onChange={(e) => setZoneFormData({...zoneFormData, freeDeliveryMinOrderValue: e.target.value})}
                       className="form-input"
-                      placeholder="e.g. 500 (Set 0 to disable free delivery)"
+                      placeholder="e.g. 500 (Set 0 to disable free delivery - Optional)"
                       min="0"
                       step="0.01"
                     />
