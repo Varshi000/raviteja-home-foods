@@ -111,6 +111,58 @@
   color: var(--primary-color);
 }
 
+.sidebar-toggle-btn {
+  display: none;
+  border: none;
+  background: transparent;
+  color: #6c757d;
+  font-size: 22px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  margin-right: 12px;
+}
+
+.sidebar-toggle-btn:hover {
+  background: var(--bg-color);
+}
+
+@media (max-width: 768px) {
+  .sidebar-toggle-btn {
+    display: flex;
+  }
+
+  .admin-navbar-center {
+    display: none;
+  }
+
+  .admin-navbar {
+    padding: 12px 18px;
+    gap: 10px;
+  }
+
+  .admin-navbar-right {
+    gap: 8px;
+  }
+
+  .admin-user-btn {
+    padding: 6px 10px;
+  }
+
+  .admin-user-info {
+    display: none;
+  }
+
+  .admin-avatar {
+    width: 34px;
+    height: 34px;
+  }
+}
+
 /* Notifications */
 .notification-wrapper {
   position: relative;

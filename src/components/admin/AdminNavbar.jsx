@@ -1,8 +1,9 @@
 // src/components/admin/AdminNavbar.jsx
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { 
+  FaBars,
   FaUserCircle, 
   FaSignOutAlt,
   FaCog,
@@ -16,6 +17,7 @@ function AdminNavbar({ title }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -41,9 +43,28 @@ function AdminNavbar({ title }) {
     setShowDropdown(true);
   };
 
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+  };
+
   const closeAll = useCallback(() => {
     setShowDropdown(false);
+    setSidebarOpen(false);
   }, []);
+
+  useEffect(() => {
+    const sidebar = document.querySelector(".admin-sidebar");
+    if (!sidebar) return;
+    if (sidebarOpen) {
+      sidebar.classList.add("mobile-open");
+    } else {
+      sidebar.classList.remove("mobile-open");
+    }
+  }, [sidebarOpen]);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(prev => !prev);
+  };
 
   const isAnyOpen = showDropdown;
 
@@ -59,6 +80,9 @@ function AdminNavbar({ title }) {
 
       <nav className="admin-navbar">
         <div className="admin-navbar-left">
+          <button className="sidebar-toggle-btn" onClick={toggleSidebar} aria-label="Open admin menu">
+            <FaBars />
+          </button>
           <div className="admin-navbar-title">
             <FaStore className="title-icon" />
             <span>{title || "Dashboard"}</span>
@@ -102,6 +126,7 @@ function AdminNavbar({ title }) {
         </div>
       </nav>
 
+      {sidebarOpen && <div className="sidebar-overlay active" onClick={closeSidebar} />}
 
       {/* ── User dropdown — rendered at document root level via fixed position ── */}
       {showDropdown && (

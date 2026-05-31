@@ -291,6 +291,16 @@ export const getUserProfile = async () => {
   return handleResponse(response);
 };
 
+export const createIssue = async (formData) => {
+  const headers = getAuthHeaders();
+  const response = await fetch(`${BASE_URL}/issues/create`, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+  return handleResponse(response);
+};
+
 // ==================== ADMIN AUTH API ====================
 
 export const adminLogin = async (email, password) => {

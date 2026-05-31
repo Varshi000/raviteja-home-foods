@@ -130,6 +130,12 @@
   }
 }
 
+@media (max-width: 900px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .product-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -145,8 +151,17 @@
     grid-template-columns: 1fr;
   }
 
+  .title-wrapper,
+  .subcategory-tabs {
+    padding: 0 12px;
+  }
+
+  .subcategory-tabs {
+    justify-content: flex-start;
+  }
+
   .subcategory-tab {
     font-size: 0.8rem;
     padding: 7px 14px;
   }
-}
+}

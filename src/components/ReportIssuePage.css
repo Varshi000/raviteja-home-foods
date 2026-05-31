@@ -1,0 +1,190 @@
+.report-issue-page {
+  padding: 40px 24px 80px;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.report-issue-hero {
+  background: linear-gradient(180deg, rgba(14, 69, 70, 0.92), rgba(12, 30, 41, 0.92)), url('/assets/about/p11.png') center/cover no-repeat;
+  border-radius: 24px;
+  padding: 48px 36px;
+  color: white;
+  margin-bottom: 32px;
+}
+
+.report-issue-heading span {
+  display: inline-block;
+  color: #ffd993;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.report-issue-heading h1 {
+  font-size: clamp(2rem, 2.4vw, 3rem);
+  line-height: 1.05;
+  margin-bottom: 16px;
+}
+
+.report-issue-heading p {
+  max-width: 760px;
+  line-height: 1.8;
+  color: #f1f7fb;
+}
+
+.report-issue-content {
+  display: flex;
+  justify-content: center;
+}
+
+.report-issue-card {
+  width: 100%;
+  max-width: 700px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 18px 48px rgba(16, 30, 50, 0.08);
+}
+
+.report-issue-card h2 {
+  margin-bottom: 10px;
+  font-size: 1.9rem;
+}
+
+.report-issue-note {
+  margin-bottom: 24px;
+  color: #5a5f70;
+}
+
+.report-issue-form label {
+  display: block;
+  margin-bottom: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.report-issue-form label span {
+  color: #dc2626;
+}
+
+.report-issue-form input,
+.report-issue-form select,
+.report-issue-form textarea {
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid #d1d5db;
+  font-size: 0.95rem;
+  color: #111827;
+  background: #f8fafc;
+}
+
+.report-issue-form textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.report-issue-form input[type="file"] {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.report-issue-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.report-issue-files span {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #111827;
+  font-size: 0.9rem;
+}
+
+.report-issue-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 24px;
+  border-radius: 14px;
+  border: none;
+  background: #0f766e;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.report-issue-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.report-issue-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #115e59;
+}
+
+.report-issue-alert {
+  padding: 14px 18px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.report-issue-alert.success {
+  background: #ecfdf5;
+  color: #166534;
+}
+
+.report-issue-alert.error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.report-issue-result {
+  margin-top: 22px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+.report-issue-result h3 {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 780px) {
+  .report-issue-page {
+    padding: 24px 16px 60px;
+  }
+
+  .report-issue-hero {
+    padding: 32px 24px;
+  }
+
+  .report-issue-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .report-issue-card {
+    width: 100%;
+    padding: 24px;
+  }
+
+  .report-issue-files {
+    justify-content: flex-start;
+  }
+
+  .report-issue-submit {
+    width: 100%;
+  }
+}

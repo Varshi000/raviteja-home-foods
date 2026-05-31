@@ -49,11 +49,36 @@ button {
   transition: all 0.3s ease;
 }
 
+img, svg, video, iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+input, textarea, select, button {
+  min-width: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 /* Base Container */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
+}
+
+@media (max-width: 1200px) {
+  .container {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 0.95rem;
+  }
 }
 
 /* Utility Classes */

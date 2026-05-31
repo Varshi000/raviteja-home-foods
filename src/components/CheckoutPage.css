@@ -604,3 +604,37 @@ textarea.form-input {
     padding: 20px 0 40px;
   }
 }
+
+@media (max-width: 500px) {
+  .checkout-page {
+    padding: 20px 12px 32px;
+  }
+
+  .checkout-form-section,
+  .checkout-summary-section {
+    padding: 18px 14px;
+  }
+
+  .coupon-input-group {
+    flex-direction: column;
+  }
+
+  .coupon-input-group .btn-apply-coupon {
+    width: 100%;
+  }
+
+  .summary-items {
+    max-height: none;
+  }
+
+  .summary-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .item-price {
+    width: 100%;
+    text-align: right;
+    margin-top: 8px;
+  }
+}

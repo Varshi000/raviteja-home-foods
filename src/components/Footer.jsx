@@ -3,6 +3,10 @@ import { FaTruck, FaStar, FaGift, FaMapMarkerAlt } from 'react-icons/fa';
 import { Link } from "react-router-dom";
 
 function Footer() {
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <footer className="footer">
 
@@ -28,7 +32,7 @@ function Footer() {
       <div className="footer-main">
 
         <div className="footer-col brand-col">
-          <Link to="/">
+          <Link to="/" onClick={scrollToTop}>
             <img src="/logo.png" alt="Raviteja Home Foods" className="footer-logo" />
           </Link>
           <p>
@@ -39,58 +43,60 @@ function Footer() {
         <div className="footer-col">
           <h3>SHOP</h3>
           <li>
-  <Link to="/category/sweets">
-    Sweets
-  </Link>
-</li>
+            <Link to="/category/sweets" onClick={scrollToTop}>
+              Sweets
+            </Link>
+          </li>
 
-<li>
-  <Link to="/category/namkeen">
-    Namkeen
-  </Link>
-</li>
+          <li>
+            <Link to="/category/namkeen" onClick={scrollToTop}>
+              Namkeen
+            </Link>
+          </li>
 
-<li>
-  <Link to="/category/pickles">
-    Pickles
-  </Link>
-</li>
+          <li>
+            <Link to="/category/pickles" onClick={scrollToTop}>
+              Pickles
+            </Link>
+          </li>
 
-<li>
-  <Link to="/category/chilli-powders">
-    Chilli Powders
-  </Link>
-</li>
+          <li>
+            <Link to="/category/chilli-powders" onClick={scrollToTop}>
+              Chilli Powders
+            </Link>
+          </li>
 
-<li>
-  <Link to="/category/essentials">
-    Daily Essentials
-  </Link>
-</li>
+          <li>
+            <Link to="/category/essentials" onClick={scrollToTop}>
+              Daily Essentials
+            </Link>
+          </li>
 
-<li>
-  <Link to="/category/gifts">
-    Gift Packs
-  </Link>
-</li>
+          <li>
+            <Link to="/category/gifts" onClick={scrollToTop}>
+              Gift Packs
+            </Link>
+          </li>
         </div>
 
         <div className="footer-col">
-         <Link to="/about">About Us</Link>
+         <Link to="/about" onClick={scrollToTop}>About Us</Link>
 
-<Link to="/contact">Contact Us</Link>
+          <Link to="/contact" onClick={scrollToTop}>Contact Us</Link>
 
-<Link to="/shipping-policy">
-  Shipping Policy
-</Link>
+          <Link to="/report-issue" onClick={scrollToTop}>Report an Issue</Link>
 
-<Link to="/privacy-policy">
-  Privacy Policy
-</Link>
+          <Link to="/shipping-policy" onClick={scrollToTop}>
+            Shipping Policy
+          </Link>
 
-<Link to="/terms">
-  Terms & Conditions
-</Link>
+          <Link to="/privacy-policy" onClick={scrollToTop}>
+            Privacy Policy
+          </Link>
+
+          <Link to="/terms" onClick={scrollToTop}>
+            Terms & Conditions
+          </Link>
         </div>
 
         <div className="footer-col">

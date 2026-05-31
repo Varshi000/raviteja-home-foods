@@ -2,6 +2,7 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
+import ScrollToTop from "./components/ScrollToTop";
 
 // Public Components
 import TopBar from "./components/TopBar";
@@ -21,6 +22,7 @@ import ContactPage from "./components/ContactPage";
 import ShippingPolicy from "./components/ShippingPolicy";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import TermsPage from "./components/TermsPage";
+import ReportIssuePage from "./components/ReportIssuePage";
 import WelcomePopup from "./components/WelcomePopup";
 import LoginPage from "./components/LoginPage";
 import CheckoutPage from "./components/CheckoutPage";
@@ -112,6 +114,7 @@ function Home() {
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {/* Public Routes - With Full Layout (Header, Navbar, Footer, AvailableOn) */}
         <Route path="/" element={
@@ -165,6 +168,12 @@ function App() {
         <Route path="/terms" element={
           <PublicLayout>
             <TermsPage />
+          </PublicLayout>
+        } />
+
+        <Route path="/report-issue" element={
+          <PublicLayout>
+            <ReportIssuePage />
           </PublicLayout>
         } />
         
