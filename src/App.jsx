@@ -3,6 +3,7 @@ import "./App.css";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import ScrollToTop from "./components/ScrollToTop";
+import ChatBot from "./components/ChatBot";
 
 // Public Components
 import TopBar from "./components/TopBar";
@@ -116,6 +117,7 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
+      <ChatBot />
       <Routes>
         {/* Public Routes - With Full Layout (Header, Navbar, Footer, AvailableOn) */}
         <Route path="/" element={

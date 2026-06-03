@@ -321,6 +321,23 @@ export const deleteIssue = async (issueId) => {
   });
   return handleResponse(response);
 };
+
+export const askQuestion = async (userInput) => {
+  const CHATBOT_BASE_URL = import.meta.env.DEV
+    ? ""
+    : import.meta.env.VITE_AI_CHATBOT_URL || "http://18.61.65.71:8001";
+  const endpoint = import.meta.env.DEV ? "/ask-question" : `${CHATBOT_BASE_URL}/ask-question`;
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ user_input: userInput }),
+  });
+  return handleResponse(response);
+};
+
 // ==================== ADMIN AUTH API ====================
 
 export const adminLogin = async (email, password) => {
