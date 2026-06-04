@@ -5,7 +5,7 @@ import { updateOrderStatus } from "../../services/api";
 import "./AdminOrders.css";
 import React, { useState, useEffect } from "react";
 
-const BASE_URL = "http://18.61.65.71:5454";
+const BASE_URL = "/api";
 
 function AdminOrders() {
   const [orders, setOrders] = useState([]);

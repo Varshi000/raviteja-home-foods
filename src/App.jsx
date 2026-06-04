@@ -1,9 +1,10 @@
 // src/App.jsx
 import "./App.css";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import ScrollToTop from "./components/ScrollToTop";
 import ChatBot from "./components/ChatBot";
+import SEO from "./components/SEO";
 
 // Public Components
 import TopBar from "./components/TopBar";
@@ -68,7 +69,12 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/admin-login" replace />;
   }
   
-  return children;
+  return (
+    <>
+      <SEO title="Admin Dashboard | RTHF" noindex={true} />
+      {children}
+    </>
+  );
 };
 
 // Public Layout with Header, Navbar, Footer (for most pages)
@@ -101,6 +107,18 @@ const SimpleLayout = ({ children }) => {
 function Home() {
   return (
     <>
+      <SEO 
+        title="Raviteja Home Foods | Authentic Traditional Indian Sweets & Snacks"
+        description="Order authentic traditional Indian sweets, snacks, and homemade foods from Raviteja Home Foods. Freshly made, delivered to your door."
+        canonicalUrl="https://ravitejahomefoods.in/"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          "name": "Raviteja Home Foods",
+          "url": "https://ravitejahomefoods.in",
+          "description": "Authentic traditional Indian sweets, snacks, and homemade foods."
+        }}
+      />
       <WelcomePopup />
       <HeroSlider />
       <StorySection />
@@ -112,12 +130,20 @@ function Home() {
   );
 }
 
+// ChatBot wrapper — hidden on all admin routes
+function ChatBotWrapper() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith("/admin");
+  if (isAdminRoute) return null;
+  return <ChatBot />;
+}
+
 // Main App Component
 function App() {
   return (
     <Router>
       <ScrollToTop />
-      <ChatBot />
+      <ChatBotWrapper />
       <Routes>
         {/* Public Routes - With Full Layout (Header, Navbar, Footer, AvailableOn) */}
         <Route path="/" element={
@@ -224,7 +250,12 @@ function App() {
         } />
 
         {/* Admin Routes - WITHOUT Header, Navbar, Footer */}
-        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/admin-login" element={
+          <>
+            <SEO title="Admin Login | RTHF" noindex={true} />
+            <AdminLogin />
+          </>
+        } />
         
         <Route 
           path="/admin/dashboard" 

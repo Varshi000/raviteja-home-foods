@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import "./SimplePolicy.css";
+import SEO from "./SEO";
 
 function PrivacyPolicy() {
   useEffect(() => {
@@ -8,6 +9,11 @@ function PrivacyPolicy() {
 
   return (
     <div className="policy-page-wrapper">
+      <SEO 
+        title="Privacy Policy | Raviteja Home Foods" 
+        description="Read our privacy policy to understand how we protect your personal information." 
+        canonicalUrl="https://ravitejahomefoods.in/privacy-policy" 
+      />
       <div className="simple-policy-container">
         <h1>Privacy Policy</h1>
         <p className="policy-intro">

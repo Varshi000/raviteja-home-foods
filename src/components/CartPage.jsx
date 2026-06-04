@@ -4,6 +4,7 @@ import "./CartPage.css";
 import { CartContext } from "../context/CartContext";
 import { Link } from "react-router-dom";
 import defaultImg from "../assets/images/category-sweets.png";
+import SEO from "./SEO";
 import { estimateShipping } from "../services/api";
 import {
   ShoppingCart,
@@ -128,6 +129,7 @@ function CartPage() {
 
   return (
     <section className="cart-page">
+      <SEO title="Cart | Raviteja Home Foods" noindex={true} />
       <div className="container">
         <h1 className="cart-title">
           <ShoppingCart size={26} className="cart-title-icon" />

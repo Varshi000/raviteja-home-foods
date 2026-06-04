@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 import productData from "../data/productData.json";
+import SEO from "./SEO";
 import "./SweetsPage.css";
 
 function SweetsPage() {
@@ -15,6 +16,16 @@ function SweetsPage() {
 
   return (
     <section className="products-page">
+      <SEO 
+        title="Sweets Collection | Raviteja Home Foods"
+        description="Taste the tradition crafted with love. Authentic handmade Indian sweets."
+        canonicalUrl="https://ravitejahomefoods.in/sweets"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          "name": "Sweets Collection"
+        }}
+      />
       <div className="title-wrapper">
         <h2 className="category-title">SWEETS COLLECTION</h2>
         <h5 className="page-subtitle">Taste the tradition crafted with love ❤️</h5>

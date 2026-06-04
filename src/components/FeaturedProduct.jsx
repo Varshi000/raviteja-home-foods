@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { fetchActiveProducts } from "../services/api";
 import defaultImg from "../assets/images/category-sweets.png";
 
-const BASE_URL = "http://18.61.65.71:5454";
+const BASE_URL = "/api";
 
 function FeaturedProducts() {
   const [products, setProducts] = useState([]);

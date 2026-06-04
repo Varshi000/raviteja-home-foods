@@ -2,12 +2,18 @@ import "./InfoPages.css";
 
 import p11 from "../assets/about/p11.png";
 import p8 from "../assets/about/p8.png";
+import SEO from "./SEO";
 
 function TermsPage() {
 
   return (
 
     <section className="terms-page">
+      <SEO 
+        title="Terms & Conditions | Raviteja Home Foods" 
+        description="Read the terms and conditions for using the Raviteja Home Foods website and ordering products." 
+        canonicalUrl="https://ravitejahomefoods.in/terms" 
+      />
 
       {/* HERO */}
 

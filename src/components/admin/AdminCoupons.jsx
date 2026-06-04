@@ -6,7 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 import { FaPlus, FaTrash, FaEdit, FaTicketAlt, FaClock, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import "./AdminCoupons.css";
 
-const BASE_URL = "http://18.61.65.71:5454";
+const BASE_URL = "/api";
 
 function AdminCoupons() {
   const [coupons, setCoupons] = useState([]);

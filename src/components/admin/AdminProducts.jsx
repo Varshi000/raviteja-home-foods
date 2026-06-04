@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import "./AdminProducts.css";
 
-const BASE_URL = "http://18.61.65.71:5454";
+const BASE_URL = "/api";
 
 function AdminProducts() {
   const [products, setProducts] = useState([]);

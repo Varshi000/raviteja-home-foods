@@ -4,12 +4,24 @@ import p1 from "../assets/about/p1.png";
 import p2 from "../assets/about/p5.png";
 import p3 from "../assets/about/p3.png";
 import p4 from "../assets/about/p6.png";
+import SEO from "./SEO";
 
 function AboutPage() {
 
   return (
 
     <section className="cinematic-about">
+      <SEO 
+        title="About Us | Raviteja Home Foods"
+        description="Learn the story behind Raviteja Home Foods, our commitment to traditional recipes, and authentic Indian taste."
+        canonicalUrl="https://ravitejahomefoods.in/about"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "Raviteja Home Foods",
+          "url": "https://ravitejahomefoods.in"
+        }}
+      />
 
       {/* HERO */}
 

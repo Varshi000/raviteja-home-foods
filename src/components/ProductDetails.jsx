@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { fetchProductById, fetchProductReviews, createReview } from "../services/api";
 import { CartContext } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import SEO from "./SEO";
 import "./ProductDetails.css";
 
 function ProductDetails() {
@@ -235,6 +236,29 @@ function ProductDetails() {
 
   return (
     <div className="product-details-page">
+      <SEO 
+        title={`${product.product_name} | Raviteja Home Foods`}
+        description={product.description || `Buy authentic ${product.product_name} online.`}
+        canonicalUrl={`https://ravitejahomefoods.in/product/${productId}`}
+        image={product.images_url?.[0] || "https://ravitejahomefoods.in/logo.png"}
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": product.product_name,
+          "image": product.images_url || [],
+          "description": product.description,
+          "brand": {
+            "@type": "Brand",
+            "name": "Raviteja Home Foods"
+          },
+          "offers": {
+            "@type": "AggregateOffer",
+            "priceCurrency": "INR",
+            "lowPrice": product.pricing?.[0]?.price || 0,
+            "availability": "https://schema.org/InStock"
+          }
+        }}
+      />
       <div className="container">
         {/* Breadcrumb */}
         <div className="breadcrumb">

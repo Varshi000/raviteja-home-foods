@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import "./SimplePolicy.css";
+import SEO from "./SEO";
 
 function ReturnRefundPolicy() {
   useEffect(() => {
@@ -8,6 +9,11 @@ function ReturnRefundPolicy() {
 
   return (
     <div className="policy-page-wrapper">
+      <SEO 
+        title="Return & Refund Policy | Raviteja Home Foods" 
+        description="Read our return and refund policy for orders from Raviteja Home Foods." 
+        canonicalUrl="https://ravitejahomefoods.in/return-refund-policy" 
+      />
       <div className="simple-policy-container">
         <h1>Return & Refund Policy</h1>
         <p className="policy-intro">

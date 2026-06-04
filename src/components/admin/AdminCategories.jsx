@@ -5,7 +5,7 @@ import AdminNavbar from "./AdminNavbar";
 import { useAuth } from "../../context/AuthContext";
 import "./AdminCategories.css";
 
-const BASE_URL = "http://18.61.65.71:5454";
+const BASE_URL = "/api";
 
 function AdminCategories() {
   const [categories, setCategories] = useState([]);

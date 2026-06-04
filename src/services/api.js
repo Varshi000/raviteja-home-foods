@@ -1,5 +1,5 @@
 // src/services/api.js
-const BASE_URL = "http://18.61.65.71:5454";
+const BASE_URL = "/api";
 
 // ==================== HELPER FUNCTIONS ====================
 
@@ -60,7 +60,7 @@ export const getCart = async (guestId, userEmail = null) => {
     } else {
       url = `${BASE_URL}/cart/?guest_id=${guestId}`;
     }
-    
+
     const headers = getAuthHeaders();
     const response = await fetch(url, { headers });
     const data = await handleResponse(response);
@@ -98,7 +98,7 @@ export const clearCart = async (guestId, userEmail = null) => {
     } else {
       url = `${BASE_URL}/cart/clear?guest_id=${guestId}`;
     }
-    
+
     const headers = getAuthHeaders();
     const response = await fetch(url, { method: "DELETE", headers });
     return handleResponse(response);
@@ -133,10 +133,10 @@ export const applyCoupon = async (couponCode, guestId = null, userEmail = null) 
       "Content-Type": "application/json",
       ...getAuthHeaders(),
     };
-    const body = userEmail 
-      ? { coupon_code: couponCode, user_email: userEmail } 
+    const body = userEmail
+      ? { coupon_code: couponCode, user_email: userEmail }
       : { coupon_code: couponCode, guest_id: guestId };
-    
+
     const response = await fetch(`${BASE_URL}/cart/apply-coupon`, {
       method: "POST",
       headers,
@@ -158,7 +158,7 @@ export const removeCoupon = async (guestId = null, userEmail = null) => {
     } else {
       url = `${BASE_URL}/cart/remove-coupon?guest_id=${guestId}`;
     }
-    
+
     const headers = getAuthHeaders();
     const response = await fetch(url, { method: "DELETE", headers });
     return handleResponse(response);
@@ -184,9 +184,9 @@ export const getGuestOrders = async (guestId) => {
 export const getUserOrders = async () => {
   try {
     const headers = getAuthHeaders();
-    const response = await fetch(`${BASE_URL}/user-login/orders`, { 
+    const response = await fetch(`${BASE_URL}/user-login/orders`, {
       method: "GET",
-      headers 
+      headers
     });
     const data = await handleResponse(response);
     return data.orders || data.data || [];
@@ -325,7 +325,7 @@ export const deleteIssue = async (issueId) => {
 export const askQuestion = async (userInput) => {
   const CHATBOT_BASE_URL = import.meta.env.DEV
     ? ""
-    : import.meta.env.VITE_AI_CHATBOT_URL || "http://18.61.65.71:8001";
+    : import.meta.env.VITE_AI_CHATBOT_URL || "/chatbot";
   const endpoint = import.meta.env.DEV ? "/ask-question" : `${CHATBOT_BASE_URL}/ask-question`;
 
   const response = await fetch(endpoint, {
@@ -344,7 +344,7 @@ export const adminLogin = async (email, password) => {
   const formData = new URLSearchParams();
   formData.append("username", email);
   formData.append("password", password);
-  
+
   const response = await fetch(`${BASE_URL}/admin-registration/login`, {
     method: "POST",
     headers: {
@@ -467,14 +467,14 @@ export const updateShippingZone = async (adminId, country, stateName, startZipco
     old_start_zipcode: parseInt(startZipcode),
     old_end_zipcode: parseInt(endZipcode),
   };
-  
+
   if (chargePerKg !== undefined && chargePerKg !== null) {
     body.new_charge_per_kg = parseFloat(chargePerKg);
   }
   if (freeDeliveryMinOrder !== undefined && freeDeliveryMinOrder !== null) {
     body.new_free_delivery_min_order_value = parseFloat(freeDeliveryMinOrder);
   }
-  
+
   const response = await fetch(`${BASE_URL}/shipping/admin/${adminId}/edit-zone`, {
     method: "PATCH",
     headers,

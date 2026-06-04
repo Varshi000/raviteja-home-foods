@@ -3,8 +3,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./LoginPage.css";
+import SEO from "./SEO";
 
-const BASE_URL = "http://18.61.65.71:5454";
+const BASE_URL = "/api";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
@@ -130,6 +131,7 @@ function LoginPage() {
 
   return (
     <div className="login-page-wrapper">
+      <SEO title="Login | Raviteja Home Foods" noindex={true} />
       <div className="login-decoration">
         <div className="decoration-circle circle-1"></div>
         <div className="decoration-circle circle-2"></div>

@@ -4,7 +4,7 @@ import { useAuth } from "./AuthContext";
 
 export const CartContext = createContext();
 
-const BASE_URL = "http://18.61.65.71:5454";
+const BASE_URL = "/api";
 
 // Generate unique guest ID for non-logged-in users
 function generateGuestId() {

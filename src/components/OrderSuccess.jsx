@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./OrderSuccess.css";
+import SEO from "./SEO";
 
 function OrderSuccess() {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ function OrderSuccess() {
 
   return (
     <div className="order-success-page">
+      <SEO title="Order Success | Raviteja Home Foods" noindex={true} />
       <div className="container">
         <div className="success-card">
           <div className="success-icon">

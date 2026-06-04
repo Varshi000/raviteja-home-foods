@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getGuestOrders, getUserOrders, createReview } from "../services/api";
 import "./MyOrders.css";
+import SEO from "./SEO";
 
 function MyOrders() {
   const { user, isAuthenticated } = useAuth();
@@ -173,6 +174,7 @@ function MyOrders() {
 
   return (
     <div className="orders-page">
+      <SEO title="My Orders | Raviteja Home Foods" noindex={true} />
       <div className="orders-container">
         {/* Header */}
         <div className="orders-header">

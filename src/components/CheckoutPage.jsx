@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import "./CheckoutPage.css";
 import { useNavigate } from "react-router-dom";
 import { fetchCountries, fetchStates } from "../services/api";
+import SEO from "./SEO";
 import {
   Package,
   ShoppingCart,
@@ -18,7 +19,7 @@ import {
   X,
 } from "lucide-react";
 
-const BASE_URL = "http://18.61.65.71:5454";
+const BASE_URL = "/api";
 
 function CheckoutPage() {
   const { cartItems, subtotal, totalPreview, discountAmount, appliedCoupon, guestId, clearCart, refreshCart, applyCoupon, removeCoupon } = useContext(CartContext);
@@ -458,6 +459,7 @@ function CheckoutPage() {
 
   return (
     <div className="checkout-page">
+      <SEO title="Checkout | Raviteja Home Foods" noindex={true} />
       <div className="container">
         <div className="checkout-container">
           {/* LEFT: Shipping Form */}

@@ -1,0 +1,11 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /admin-login
+Disallow: /cart
+Disallow: /checkout
+Disallow: /login
+Disallow: /my-orders
+Disallow: /order-success
+Disallow: /report-issue
+
+Sitemap: https://ravitejahomefoods.in/sitemap.xml

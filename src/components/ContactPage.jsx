@@ -2,12 +2,29 @@ import "./InfoPages.css";
 
 import p8 from "../assets/about/p8.png";
 import p6 from "../assets/about/p6.png";
+import SEO from "./SEO";
 
 function ContactPage() {
 
   return (
 
     <section className="contact-page">
+      <SEO 
+        title="Contact Us | Raviteja Home Foods"
+        description="Get in touch with Raviteja Home Foods. Call us for orders, support, and enquiries."
+        canonicalUrl="https://ravitejahomefoods.in/contact"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          "name": "Raviteja Home Foods",
+          "telephone": "+919246848877",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Kukatpally, Hyderabad",
+            "addressCountry": "IN"
+          }
+        }}
+      />
 
       {/* HERO SECTION */}
 

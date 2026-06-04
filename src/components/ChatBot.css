@@ -1,15 +1,12 @@
-﻿.chatbot-widget {
+.chatbot-widget {
   position: fixed;
+  right: 24px;
+  bottom: 24px;
   z-index: 9999;
-  touch-action: none;
   display: inline-flex;
   align-items: flex-start;
 }
 
-.chatbot-widget.dragging .chatbot-toggle,
-.chatbot-widget.dragging .chatbot-header {
-  cursor: grabbing;
-}
 
 .chatbot-toggle {
   position: relative;
@@ -24,7 +21,7 @@
   place-items: center;
   box-shadow: var(--shadow-lg);
   transition: transform 0.2s ease, background 0.2s ease;
-  cursor: grab;
+  cursor: pointer;
 }
 
 .chatbot-toggle:hover {
@@ -107,7 +104,7 @@
   padding: 14px 16px;
   background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
   color: var(--white);
-  cursor: grab;
+  cursor: pointer;
 }
 
 .chatbot-header strong {

@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import { fetchCategoriesWithSubcategories, fetchProductsByCategory } from "../services/api";
+import SEO from "./SEO";
 import "./CategoryPage.css";
 
-const BASE_URL = "http://18.61.65.71:5454";
+const BASE_URL = "/api";
 
 // Map URL type slug → category display name
 const CATEGORY_NAMES = {
@@ -143,6 +144,11 @@ function CategoryPage() {
 
   return (
     <section className={`products-page ${type}`}>
+      <SEO 
+        title={`${subcategoryLabel || categoryName} | Raviteja Home Foods`}
+        description={`Browse our collection of authentic ${subcategoryLabel || categoryName} from Raviteja Home Foods.`}
+        canonicalUrl={`https://ravitejahomefoods.in/category/${type}${subcategoryParam ? `?subcategory=${subcategoryParam}` : ''}`}
+      />
       <div className="title-wrapper">
         <h2 className="category-title">
           {subcategoryLabel ? `${subcategoryLabel} COLLECTION` : categoryName}

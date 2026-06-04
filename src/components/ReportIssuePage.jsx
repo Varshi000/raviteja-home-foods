@@ -3,6 +3,7 @@ import { useState, useRef, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import { createIssue } from "../services/api";
 import "./ReportIssuePage.css";
+import SEO from "./SEO";
 
 const ISSUE_TYPES = [
   { id: "Refund/Return",  label: "Refund / Return",  requiresImage: true  },
@@ -114,6 +115,7 @@ export default function ReportIssuePage() {
   /* ── form ─────────────────────────────────────── */
   return (
     <div className="ri-page">
+      <SEO title="Report Issue | Raviteja Home Foods" noindex={true} />
       <div className="ri-header">
         <h1>Report a Problem</h1>
         <p>Tell us what went wrong and we'll make it right.</p>

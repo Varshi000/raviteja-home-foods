@@ -2,12 +2,18 @@ import "./InfoPages.css";
 
 import p7 from "../assets/about/p7.png";
 import p8 from "../assets/about/p8.png";
+import SEO from "./SEO";
 
 function ShippingPolicy() {
 
   return (
 
     <section className="shipping-page">
+      <SEO 
+        title="Shipping Policy | Raviteja Home Foods" 
+        description="Read our shipping policy. We deliver authentic Telugu flavors Pan India." 
+        canonicalUrl="https://ravitejahomefoods.in/shipping-policy" 
+      />
 
       {/* HERO */}
 
