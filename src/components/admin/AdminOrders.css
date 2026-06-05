@@ -469,8 +469,13 @@
   background: white;
   border-radius: 20px;
   width: 90%;
-  max-width: 500px;
+  max-width: 780px;
   animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 .modal-header {
@@ -484,6 +489,32 @@
 .modal-header h2 {
   font-size: 20px;
   margin: 0;
+}
+
+.btn-download-pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #7b1113 0%, #9a1518 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-download-pdf:hover {
+  background: linear-gradient(135deg, #9a1518 0%, #b41a1d 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(123, 17, 19, 0.35);
+}
+
+.btn-download-pdf:active {
+  transform: translateY(0);
 }
 
 .close-modal {

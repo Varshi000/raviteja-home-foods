@@ -209,23 +209,24 @@ export const getAllOrders = async (limit = 100, skip = 0) => {
 };
 
 export const updateOrderStatus = async (orderId, status) => {
-  try {
-    const headers = {
-      "Content-Type": "application/json",
-      ...getAuthHeaders(),
-    };
-    const response = await fetch(
-      `${BASE_URL}/orders/admin/update-status/${orderId}?new_status=${encodeURIComponent(status)}`,
-      {
-        method: "PATCH",
-        headers,
-      }
-    );
-    return handleResponse(response);
-  } catch (error) {
-    console.error("Failed to update order status:", error);
-    return null;
-  }
+  const headers = {
+    "Content-Type": "application/json",
+    ...getAuthHeaders(),
+  };
+  const response = await fetch(
+    `${BASE_URL}/orders/admin/update-status/${orderId}?new_status=${encodeURIComponent(status)}`,
+    {
+      method: "PATCH",
+      headers,
+    }
+  );
+  return handleResponse(response);
+};
+
+export const getOrderById = async (orderId) => {
+  const headers = getAuthHeaders();
+  const response = await fetch(`${BASE_URL}/orders/order/${orderId}`, { headers });
+  return handleResponse(response);
 };
 
 export const estimateDelivery = async (country, state, pincode, guestId) => {

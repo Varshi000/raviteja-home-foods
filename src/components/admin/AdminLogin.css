@@ -175,3 +175,34 @@
   border: none;
   border-top: 1px solid #e0d6c8;
 }
+
+/* Password eye toggle styling */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-input-wrapper .admin-input {
+  padding-right: 48px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  z-index: 2;
+}
+
+.password-toggle-btn:hover {
+  color: #7b1113;
+}
