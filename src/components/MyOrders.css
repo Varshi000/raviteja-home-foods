@@ -588,41 +588,65 @@ address p {
   cursor: pointer;
 }
 
-/* ========================================
-   RESPONSIVE
-   ======================================== */
-@media (max-width: 768px) {
-  .orders-container {
-    padding: 0 16px;
+/* ── Mobile: fixed header offset ── */
+@media (max-width: 1100px) {
+  .orders-page {
+    padding-top: 20px;
   }
-  
+}
+
+@media (max-width: 768px) {
+  .orders-page {
+    padding: 16px 0 40px;
+  }
+
+  .orders-container {
+    padding: 0 14px;
+  }
+
+  .orders-header h1 {
+    font-size: 22px;
+  }
+
+  .orders-header p {
+    font-size: 13px;
+  }
+
   .order-row {
     flex-direction: column;
     align-items: flex-start;
+    padding: 14px 16px;
+    gap: 10px;
   }
-  
+
   .order-right {
     width: 100%;
     justify-content: space-between;
   }
-  
+
   .expanded-grid {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .items-table {
     display: block;
     overflow-x: auto;
   }
-  
+
   .form-row {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
-  .orders-header h1 {
-    font-size: 24px;
+
+  .orders-filters {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .filter-btn {
+    padding: 7px 12px;
+    font-size: 13px;
   }
 }
 

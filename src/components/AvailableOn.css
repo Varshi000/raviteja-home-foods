@@ -48,13 +48,54 @@
 
 /* 📱 Mobile */
 @media (max-width: 768px) {
-  .platform-card {
-    width: 130px;
-    height: 90px;
-    padding: 15px;
+  .available {
+    padding: 24px 4%;
   }
 
   .available h2 {
-    font-size: 18px;
+    font-size: 16px;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .platforms {
+    gap: 12px;
+  }
+
+  .platform-card {
+    width: 100px;
+    height: 70px;
+    padding: 10px;
+    border-radius: 16px;
+  }
+
+  .platform-card img {
+    max-height: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .available {
+    padding: 18px 3%;
+  }
+
+  .available h2 {
+    font-size: 14px;
+    margin-bottom: 14px;
+  }
+
+  .platforms {
+    gap: 10px;
+  }
+
+  .platform-card {
+    width: 80px;
+    height: 56px;
+    padding: 8px;
+    border-radius: 12px;
+  }
+
+  .platform-card img {
+    max-height: 38px;
   }
 }

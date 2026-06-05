@@ -578,6 +578,15 @@ textarea.form-input {
 /* ══════════════════════════════════════
    Responsive
    ══════════════════════════════════════ */
+/* ── Mobile: fixed header offset + standardized spacing ── */
+@media (max-width: 1100px) {
+  .checkout-page {
+    /* body already offsets by --header-h from index.css;
+       reduce checkout's own top padding so there's no double gap */
+    padding-top: 20px;
+  }
+}
+
 @media (max-width: 900px) {
   .checkout-container {
     grid-template-columns: 1fr;
@@ -590,29 +599,50 @@ textarea.form-input {
 }
 
 @media (max-width: 600px) {
+  .checkout-page {
+    padding: 16px 0 40px;
+  }
+
   .checkout-form-section,
   .checkout-summary-section {
-    padding: 22px 18px;
+    padding: 20px 16px;
+    border-radius: 12px;
+  }
+
+  .checkout-form-section h2,
+  .checkout-summary-section h2 {
+    font-size: 1.1rem;
+    margin-bottom: 16px;
   }
 
   .form-row {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 14px;
   }
 
-  .checkout-page {
-    padding: 20px 0 40px;
+  .form-group label {
+    font-size: 0.8rem;
+  }
+
+  .form-input {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+
+  .pay-btn {
+    padding: 14px;
+    font-size: 0.92rem;
   }
 }
 
 @media (max-width: 500px) {
   .checkout-page {
-    padding: 20px 12px 32px;
+    padding: 12px 10px 36px;
   }
 
   .checkout-form-section,
   .checkout-summary-section {
-    padding: 18px 14px;
+    padding: 16px 13px;
   }
 
   .coupon-input-group {

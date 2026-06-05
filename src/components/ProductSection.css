@@ -142,10 +142,30 @@
 }
 
 @media (max-width: 600px) {
-  .slider-item {
-    flex: 0 0 85%;
+  .products {
+    padding: 36px 0;
   }
+
+  .products-head {
+    margin-bottom: 24px;
+  }
+
+  .products-head h2 {
+    font-size: 28px;
+  }
+
+  .product-slider {
+    gap: 14px;
+    padding-bottom: 14px;
+  }
+
+  /* Show 1 card prominently with a peek of the next */
+  .slider-item {
+    flex: 0 0 75%;
+    min-width: 0;
+  }
+
   .left-btn, .right-btn {
-    display: none; /* Let users swipe on mobile naturally */
+    display: none;
   }
 }

@@ -19,6 +19,12 @@
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
+
+  /* ── Mobile Fixed Header Height ──
+     These match the values set in Header.css @media blocks.
+     All pages use padding-top: var(--header-h) on mobile
+     so content never hides behind the fixed header. */
+  --header-h: 0px;      /* desktop: header is sticky, no offset needed */
 }
 
 * {
@@ -75,9 +81,34 @@ html {
   }
 }
 
+@media (max-width: 1100px) {
+  /* On tablet/mobile the header becomes position:fixed.
+     Set --header-h so any page can use it for padding-top. */
+  :root {
+    --header-h: 64px;
+  }
+
+  body {
+    /* Prevent content from rendering under the fixed header */
+    padding-top: var(--header-h);
+  }
+
+  /* Hero slider already handles its own margin-top via HeroSlider.css.
+     Reset body padding-top for the home page hero so it doesn't double-offset. */
+  .hero-slider {
+    margin-top: calc(-1 * var(--header-h)); /* cancel body padding, use own margin */
+  }
+}
+
 @media (max-width: 768px) {
+  :root {
+    --header-h: 60px;
+  }
+
   body {
     font-size: 0.95rem;
+    /* padding-top inherited from the 1100px block, overridden here */
+    padding-top: var(--header-h);
   }
 }
 

@@ -35,9 +35,29 @@ function Footer() {
           <Link to="/" onClick={scrollToTop}>
             <img src="/logo.png" alt="Raviteja Home Foods" className="footer-logo" />
           </Link>
-          <p>
-            More than food — it’s the happiness of family gatherings, the comfort of home, and the taste of traditions passed down with love.
-          </p>
+          <div className="footer-brand-info">
+            <p className="brand-legal-line">
+              <span className="brand-secret">Trade Secret Protected Formula</span>
+            </p>
+            <p className="brand-legal-line">
+              <span>RAVITEJA<sup>®</sup> Registered Trademark</span>
+            </p>
+            <p className="brand-legal-line">
+              <span>Copyright © Raviteja Home Foods Pvt. Ltd.</span>
+            </p>
+
+            {/* FSSAI Badge */}
+            <div className="fssai-badge">
+              <div className="fssai-logo-wrap">
+                <span className="fssai-text">
+                  <em className="fssai-f">f</em>ssai
+                  <span className="fssai-leaf">🌿</span>
+                </span>
+                <div className="fssai-bar" />
+              </div>
+              <p className="fssai-lic">Lic. No. 23626032003783</p>
+            </div>
+          </div>
         </div>
 
         <div className="footer-col">

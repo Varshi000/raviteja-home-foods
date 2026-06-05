@@ -125,19 +125,17 @@
 }
 
 @media (max-width: 1100px) {
-  /* On mobile the header is position:fixed, so push hero down by header height */
+  /* margin-top handled globally in index.css via --header-h + hero negative margin */
   .hero-slider {
-    margin-top: 64px;
+    margin-top: 0;
   }
 }
 
 @media (max-width: 768px) {
   .hero-slider {
-    /* Fixed height that keeps a clean wide rectangle on phones */
     height: 52vw;
     min-height: 220px;
     max-height: 380px;
-    margin-top: 60px;
   }
 
   .prev-btn {
@@ -170,6 +168,5 @@
     height: 55vw;
     min-height: 200px;
     max-height: 280px;
-    margin-top: 60px;
   }
 }
