@@ -11,6 +11,8 @@
   padding: 0 40px;
   position: sticky;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 1000;
   border-bottom: 1px solid rgba(210, 163, 85, 0.2);
   box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
@@ -410,10 +412,12 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(5px);
-  z-index: 2000;
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 9999;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease;
+  /* Rendered via React portal into document.body — always on top */
 }
 
 .mobile-menu-drawer-backdrop.open {
@@ -430,11 +434,12 @@
   background: var(--primary-color);
   border-left: 1px solid rgba(210, 163, 85, 0.3);
   box-shadow: -8px 0 32px rgba(0, 0, 0, 0.35);
-  z-index: 2001;
+  z-index: 10000;
   transform: translateX(100%);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
+  overscroll-behavior: contain;
 }
 
 .mobile-menu-drawer.open {
@@ -575,6 +580,21 @@
 
 /* ── Responsive Viewport Adjustments ── */
 @media (max-width: 1100px) {
+  /* On tablet/mobile use fixed positioning so header is ALWAYS pinned to top */
+  .main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 0 20px;
+    height: 64px;
+  }
+
+  .main-header.scrolled {
+    height: 60px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+
   /* Hide desktop horizontal menu links */
   .desktop-nav {
     display: none;
@@ -585,45 +605,36 @@
     display: flex;
   }
 
-  .main-header {
-    padding: 0 20px;
-    height: 72px;
-  }
-
-  .main-header.scrolled {
-    height: 62px;
-  }
-
   .logo-section,
   .header-icons {
     width: auto;
   }
 
   .site-logo {
-    height: 48px;
+    height: 44px;
   }
 
   .main-header.scrolled .site-logo {
-    height: 42px;
+    height: 38px;
   }
 }
 
 @media (max-width: 768px) {
   .main-header {
-    padding: 0 16px;
-    height: 64px;
+    padding: 0 14px;
+    height: 60px;
   }
 
   .main-header.scrolled {
-    height: 58px;
+    height: 56px;
   }
 
   .site-logo {
-    height: 40px;
+    height: 38px;
   }
 
   .main-header.scrolled .site-logo {
-    height: 36px;
+    height: 34px;
   }
 
   .icon-wrapper {

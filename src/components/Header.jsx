@@ -2,6 +2,7 @@
 import "./Header.css";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useContext, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useAuth } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
 import UserMenu from "./UserMenu";
@@ -210,72 +211,76 @@ function Header() {
         </button>
       </div>
 
-      {/* Mobile Drawer Navigation overlay */}
-      <div 
-        className={`mobile-menu-drawer-backdrop ${mobileMenuOpen ? "open" : ""}`} 
-        onClick={() => setMobileMenuOpen(false)}
-      >
-        <div 
-          className={`mobile-menu-drawer ${mobileMenuOpen ? "open" : ""}`} 
-          onClick={(e) => e.stopPropagation()}
+      {/* Mobile Drawer — rendered via portal directly into document.body
+          so it's never clipped by the header's stacking context */}
+      {createPortal(
+        <div
+          className={`mobile-menu-drawer-backdrop ${mobileMenuOpen ? "open" : ""}`}
+          onClick={() => setMobileMenuOpen(false)}
         >
-          <div className="drawer-header">
-            <h3>Menu</h3>
-            <button className="drawer-close-btn" onClick={() => setMobileMenuOpen(false)}>
-              <X size={20} />
-            </button>
-          </div>
-          <div className="drawer-content">
-            <nav className="mobile-nav">
-              {navItems.map((item) => {
-                const hasSub = item.subcategories && item.subcategories.length > 0;
-                const isExpanded = expandedMobileItem === item.key;
-                return (
-                  <div key={item.key} className="mobile-nav-item">
-                    <div className="mobile-nav-link-row">
-                      <Link 
-                        to={item.to} 
-                        className={`mobile-nav-link ${isActive(item.to) ? "active" : ""}`}
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {item.label}
-                      </Link>
-                      {hasSub && (
-                        <button
-                          className="mobile-expand-btn"
-                          onClick={() => setExpandedMobileItem(isExpanded ? null : item.key)}
-                        >
-                          <ChevronDown size={18} className={`expand-chevron ${isExpanded ? "rotated" : ""}`} />
-                        </button>
-                      )}
-                    </div>
-                    {hasSub && isExpanded && (
-                      <div className="mobile-submenu">
+          <div
+            className={`mobile-menu-drawer ${mobileMenuOpen ? "open" : ""}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="drawer-header">
+              <h3>Menu</h3>
+              <button className="drawer-close-btn" onClick={() => setMobileMenuOpen(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="drawer-content">
+              <nav className="mobile-nav">
+                {navItems.map((item) => {
+                  const hasSub = item.subcategories && item.subcategories.length > 0;
+                  const isExpanded = expandedMobileItem === item.key;
+                  return (
+                    <div key={item.key} className="mobile-nav-item">
+                      <div className="mobile-nav-link-row">
                         <Link
                           to={item.to}
-                          className="mobile-submenu-item view-all"
+                          className={`mobile-nav-link ${isActive(item.to) ? "active" : ""}`}
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          View All {item.label.charAt(0) + item.label.slice(1).toLowerCase()}
+                          {item.label}
                         </Link>
-                        {item.subcategories.map((sub) => (
+                        {hasSub && (
                           <button
-                            key={sub.dbValue}
-                            className="mobile-submenu-item"
-                            onClick={() => handleSubcategoryClick(item.key, sub)}
+                            className="mobile-expand-btn"
+                            onClick={() => setExpandedMobileItem(isExpanded ? null : item.key)}
                           >
-                            {sub.label}
+                            <ChevronDown size={18} className={`expand-chevron ${isExpanded ? "rotated" : ""}`} />
                           </button>
-                        ))}
+                        )}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-            </nav>
+                      {hasSub && isExpanded && (
+                        <div className="mobile-submenu">
+                          <Link
+                            to={item.to}
+                            className="mobile-submenu-item view-all"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            View All {item.label.charAt(0) + item.label.slice(1).toLowerCase()}
+                          </Link>
+                          {item.subcategories.map((sub) => (
+                            <button
+                              key={sub.dbValue}
+                              className="mobile-submenu-item"
+                              onClick={() => handleSubcategoryClick(item.key, sub)}
+                            >
+                              {sub.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </nav>
+            </div>
           </div>
-        </div>
-      </div>
+        </div>,
+        document.body
+      )}
     </header>
   );
 }
