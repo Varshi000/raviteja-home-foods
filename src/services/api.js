@@ -1,5 +1,24 @@
 // src/services/api.js
+import localProductData from "../data/productData.json";
+
 const BASE_URL = "/api";
+
+// Map a local productData.json item → backend-compatible product shape
+const mapLocalProduct = (p) => ({
+  id: String(p.id),
+  _id: String(p.id),
+  product_name: p.name,
+  description: "",
+  category_id: p.category?.toLowerCase().replace(/\s+/g, "-") || "",
+  category_name: p.category || "",
+  subcategory: "",
+  images_url: p.image ? [p.image] : [],
+  pricing: p.prices
+    ? Object.entries(p.prices).map(([weight, price]) => ({ weight, price }))
+    : [],
+  is_active: true,
+  business_type: "retail",
+});
 
 // ==================== HELPER FUNCTIONS ====================
 
@@ -19,9 +38,19 @@ const handleResponse = async (response) => {
 // ==================== PRODUCTS API ====================
 
 export const fetchActiveProducts = async () => {
-  const response = await fetch(`${BASE_URL}/products/get_active_products`);
-  const data = await handleResponse(response);
-  return Array.isArray(data) ? data : data.data || [];
+  try {
+    const response = await fetch(`${BASE_URL}/products/get_active_products`);
+    const data = await handleResponse(response);
+    const products = Array.isArray(data) ? data : data.data || [];
+    // If the backend has no products yet, fall back to local product catalogue
+    if (products.length === 0) {
+      return localProductData.map(mapLocalProduct);
+    }
+    return products;
+  } catch (err) {
+    console.warn("fetchActiveProducts: backend unavailable, using local data.", err);
+    return localProductData.map(mapLocalProduct);
+  }
 };
 
 export const fetchProductsByCategory = async (categoryId) => {

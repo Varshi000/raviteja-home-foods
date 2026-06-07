@@ -90,10 +90,14 @@
   flex: 1;
   padding: 10px !important;
   font-size: 0.9rem !important;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease !important;
 }
 
+/* Guest flash + logged-in persistent in-cart state */
 .add-cart-btn.added {
-  background-color: #2e7d32;
+  background-color: #1b5e20 !important;
+  box-shadow: 0 2px 8px rgba(27, 94, 32, 0.35);
+  letter-spacing: 0.3px;
 }
 
 /* ── Mobile: product cards slightly smaller than desktop (natural look) ── */

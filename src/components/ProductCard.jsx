@@ -3,36 +3,48 @@ import { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import "./ProductCard.css";
 import { CartContext } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 import defaultImg from "../assets/images/category-sweets.png";
 
 function ProductCard({ item }) {
   const [quantity, setQuantity] = useState(1);
   const [selectedWeight, setSelectedWeight] = useState(null);
-  const [added, setAdded] = useState(false);
-  const { addToCart } = useContext(CartContext);
+  // guestAdded: temporary 2-second flash used only for guest users
+  const [guestAdded, setGuestAdded] = useState(false);
+
+  const { addToCart, getItemQuantity } = useContext(CartContext);
+  const { isAuthenticated } = useAuth();
 
   // Get pricing options from product
   const pricingOptions = item.pricing || [];
-  
+
   // Set default weight if not selected
   const currentWeight = selectedWeight || (pricingOptions[0]?.weight || "500g");
   const currentPrice = pricingOptions.find(p => p.weight === currentWeight)?.price || item.price || 0;
 
-  // src/components/ProductCard.jsx - handleAddToCart function
+  // For logged-in users: derive persistent "in cart" state from live cart data
+  const productId = String(item.id || item._id);
+  const qtyInCart = isAuthenticated ? getItemQuantity(productId, currentWeight) : 0;
+  const isInCart = isAuthenticated && qtyInCart > 0;
+
   const handleAddToCart = async () => {
     const productToAdd = {
-      id: item.id || item._id,
+      id: productId,
       product_name: item.product_name,
       image_url: item.images_url?.[0] || defaultImg,
       selectedWeight: currentWeight,
       price: currentPrice,
     };
-    
+
     const result = await addToCart(productToAdd, quantity);
-    
+
     if (result?.success) {
-      setAdded(true);
-      setTimeout(() => setAdded(false), 2000);
+      if (!isAuthenticated) {
+        // Guest: show 2-second flash, then reset
+        setGuestAdded(true);
+        setTimeout(() => setGuestAdded(false), 2000);
+      }
+      // Logged-in: isInCart becomes true automatically via live cartItems — no timeout needed
     } else {
       alert(result?.message || "Failed to add to cart");
     }
@@ -40,12 +52,20 @@ function ProductCard({ item }) {
 
   const availableWeights = pricingOptions.map(p => p.weight);
 
+  // Resolve button appearance
+  const btnInCartState = isInCart || guestAdded;
+  const btnLabel = isInCart
+    ? "✓ Added to Cart"
+    : guestAdded
+    ? "✓ ADDED"
+    : "ADD TO CART";
+
   return (
     <div className="product-card">
       <Link to={`/product/${item.id || item._id}`} className="product-image-link">
-        <img 
-          src={item.images_url?.[0] || defaultImg} 
-          alt={item.product_name} 
+        <img
+          src={item.images_url?.[0] || defaultImg}
+          alt={item.product_name}
         />
       </Link>
       <div className="product-info">
@@ -76,10 +96,10 @@ function ProductCard({ item }) {
           </div>
 
           <button
-            className={`btn-primary add-cart-btn ${added ? "added" : ""}`}
+            className={`btn-primary add-cart-btn${btnInCartState ? " added" : ""}`}
             onClick={handleAddToCart}
           >
-            {added ? "✓ ADDED" : "ADD TO CART"}
+            {btnLabel}
           </button>
         </div>
       </div>

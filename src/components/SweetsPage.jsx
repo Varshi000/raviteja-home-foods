@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
-import productData from "../data/productData.json";
+import { fetchActiveProducts } from "../services/api";
 import SEO from "./SEO";
 import "./SweetsPage.css";
 
@@ -8,10 +8,16 @@ function SweetsPage() {
   const [sweets, setSweets] = useState([]);
 
   useEffect(() => {
-    const sweetsProducts = productData.filter(
-      (item) => item.category === "Sweets"
-    );
-    setSweets(sweetsProducts);
+    fetchActiveProducts()
+      .then((allProducts) => {
+        const sweetsProducts = allProducts.filter(
+          (item) =>
+            item.category_name?.toLowerCase() === "sweets" ||
+            item.category_id?.toLowerCase() === "sweets"
+        );
+        setSweets(sweetsProducts);
+      })
+      .catch(() => setSweets([]));
   }, []);
 
   return (

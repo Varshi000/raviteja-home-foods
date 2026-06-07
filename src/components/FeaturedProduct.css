@@ -76,6 +76,19 @@
   width: 100%;
 }
 
+/* View Details CTA — brand primary red/maroon */
+.featured-view-btn {
+  width: 100%;
+  letter-spacing: 0.5px;
+  transition: background-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.featured-view-btn:hover {
+  background-color: var(--primary-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
 @media (max-width: 1100px) {
   .product-grid {
     grid-template-columns: repeat(3, 1fr);

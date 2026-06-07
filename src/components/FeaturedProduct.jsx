@@ -106,7 +106,7 @@ function FeaturedProducts() {
                 <h3>{item.product_name}</h3>
                 <p className="price">₹{item.pricing?.[0]?.price || 0}</p>
                 <Link to={`/product/${item.id || item._id}`}>
-                  <button className="btn-secondary">View Details</button>
+                  <button className="btn-primary featured-view-btn">View Details</button>
                 </Link>
               </div>
             </div>
