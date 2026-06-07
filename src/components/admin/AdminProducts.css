@@ -368,7 +368,7 @@
   z-index: 1000;
   animation: fadeInOverlay 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 16px;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 @keyframes fadeInOverlay {
@@ -387,7 +387,7 @@
   border-radius: 28px;
   width: 100%;
   max-width: 1100px;
-  max-height: 95vh;
+  max-height: 90vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -398,6 +398,13 @@
     0 24px 60px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.8);
   position: relative;
+}
+
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
 }
 
 @keyframes modalSlideIn {
@@ -449,7 +456,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 36px 40px;
+  padding: 20px 32px;
   background: linear-gradient(135deg, #fafbfc 0%, #f5f7fa 100%);
   border-bottom: 1px solid #e5eaf2;
   flex-shrink: 0;
@@ -524,9 +531,8 @@
 }
 
 .modal-body {
-  padding: 36px 40px;
+  padding: 24px 32px;
   overflow-y: auto;
-  max-height: calc(95vh - 160px);
   flex: 1;
   background: #ffffff;
   scroll-behavior: smooth;
@@ -536,8 +542,8 @@
    FORM SECTIONS & INPUTS - PREMIUM MODERN
    ======================================== */
 .form-section {
-  margin-bottom: 36px;
-  padding: 28px 32px;
+  margin-bottom: 20px;
+  padding: 20px 24px;
   background: linear-gradient(135deg, #fafbfc 0%, #f5f7fa 100%);
   border-radius: 18px;
   border: 1.5px solid #e8ecf1;
@@ -1099,7 +1105,7 @@ select.form-input option {
   display: flex;
   justify-content: flex-end;
   gap: 14px;
-  padding: 28px 40px;
+  padding: 16px 32px;
   border-top: 1px solid #e8ecf1;
   background: linear-gradient(135deg, #fafbfc 0%, #f5f7fa 100%);
   flex-shrink: 0;

@@ -143,3 +143,10 @@ html {
   background-color: var(--secondary-light);
   transform: translateY(-2px);
 }
+
+/* Reset body padding-top on admin pages to prevent blank space at top of viewport on mobile */
+body.admin-body,
+body:has(.admin-layout),
+body:has(.admin-login-container) {
+  padding-top: 0 !important;
+}

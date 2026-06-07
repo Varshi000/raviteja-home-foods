@@ -1,5 +1,5 @@
 // src/components/admin/AdminLogin.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { adminLogin } from "../../services/api";
@@ -14,6 +14,13 @@ function AdminLogin() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { adminLogin: authAdminLogin } = useAuth();
+
+  useEffect(() => {
+    document.body.classList.add("admin-body");
+    return () => {
+      document.body.classList.remove("admin-body");
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

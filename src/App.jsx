@@ -1,5 +1,6 @@
 // src/App.jsx
 import "./App.css";
+import { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import ScrollToTop from "./components/ScrollToTop";
@@ -50,6 +51,13 @@ import AdminIssues from "./components/admin/AdminIssues";
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isAdmin, loading } = useAuth();
   
+  useEffect(() => {
+    document.body.classList.add("admin-body");
+    return () => {
+      document.body.classList.remove("admin-body");
+    };
+  }, []);
+
   if (loading) {
     return (
       <div style={{ 

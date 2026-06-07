@@ -145,10 +145,10 @@ function AdminNavbar({ title }) {
             </div>
           </div>
           <div className="dropdown-menu">
-            <button onClick={() => { navigate("/admin/profile"); closeAll(); }}>
+            <button onClick={() => { alert("My Profile feature is coming soon!"); closeAll(); }}>
               <FaUserCircle /> My Profile
             </button>
-            <button onClick={() => { navigate("/admin/settings"); closeAll(); }}>
+            <button onClick={() => { alert("Settings feature is coming soon!"); closeAll(); }}>
               <FaCog /> Settings
             </button>
             <div className="dropdown-divider"></div>

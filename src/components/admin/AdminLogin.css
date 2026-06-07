@@ -7,7 +7,8 @@
   background: linear-gradient(135deg, #7b1113 0%, #d2a355 100%);
   padding: 20px;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* Add decorative elements */
@@ -43,6 +44,7 @@
   animation: slideUp 0.5s ease;
   position: relative;
   z-index: 1;
+  margin: auto;
 }
 
 @keyframes slideUp {
@@ -205,4 +207,45 @@
 
 .password-toggle-btn:hover {
   color: #7b1113;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 480px) {
+  .admin-login-container {
+    padding: 16px;
+  }
+  
+  .admin-login-card {
+    padding: 32px 20px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  }
+  
+  .admin-logo {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 12px;
+  }
+  
+  .admin-login-header {
+    margin-bottom: 24px;
+  }
+  
+  .admin-login-header h1 {
+    font-size: 24px;
+  }
+  
+  .admin-login-header p {
+    font-size: 13px;
+  }
+  
+  .admin-input {
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+  
+  .admin-login-btn {
+    padding: 12px;
+    font-size: 15px;
+  }
 }

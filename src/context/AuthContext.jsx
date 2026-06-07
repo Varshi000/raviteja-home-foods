@@ -12,27 +12,17 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);  // ← This is a boolean
-  const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(null);
-
-  useEffect(() => {
-    const initializeAuth = async () => {
-      const storedToken = localStorage.getItem("access_token");
-      const storedUser = localStorage.getItem("user_data");
-      const storedIsAdmin = localStorage.getItem("is_admin") === "true";
-
-      if (storedToken && storedUser) {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-        setIsAdmin(storedIsAdmin);  // ← Set boolean value
-      }
-      setLoading(false);
-    };
-
-    initializeAuth();
-  }, []);
+  const [token, setToken] = useState(() => localStorage.getItem("access_token"));
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user_data");
+    try {
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem("is_admin") === "true");
+  const [loading, setLoading] = useState(false);
 
   // Admin Login
   const adminLogin = (accessToken, adminData) => {
