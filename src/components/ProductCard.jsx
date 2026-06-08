@@ -34,6 +34,7 @@ function ProductCard({ item }) {
       image_url: item.images_url?.[0] || defaultImg,
       selectedWeight: currentWeight,
       price: currentPrice,
+      business_type: item.business_type,
     };
 
     const result = await addToCart(productToAdd, quantity);

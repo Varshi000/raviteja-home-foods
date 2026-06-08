@@ -81,7 +81,6 @@ function CartProvider({ children }) {
       const weight = product.selectedWeight || product.weight || "500g";
       const price = product.price || 0;
       
-      // Create a single item array
       const items = [{
         product_id: productId,
         product_name: product.product_name,
@@ -89,7 +88,7 @@ function CartProvider({ children }) {
         weight: weight,
         price: price,
         quantity: quantity,
-        business_type: "retail"
+        business_type: product.business_type || "retail"
       }];
       
       const payload = {
@@ -110,8 +109,8 @@ function CartProvider({ children }) {
       });
       
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || "Failed to add to cart");
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.detail || error.message || `Failed to add to cart (${response.status})`);
       }
       
       // Reload cart after update
@@ -151,8 +150,8 @@ function CartProvider({ children }) {
       });
       
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || "Failed to update quantity");
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.detail || error.message || `Failed to update quantity (${response.status})`);
       }
       
       await loadCart();
@@ -198,10 +197,11 @@ function CartProvider({ children }) {
   const applyCoupon = async (couponCode) => {
     setCartLoading(true);
     try {
-      const payload = {
-        coupon_code: couponCode,
-        guest_id: isAuthenticated ? undefined : guestId,
-      };
+      // Backend uses Bearer token (Authorization header) for logged-in users
+      // and guest_id in body for guest users. Do NOT send user_email in body.
+      const payload = isAuthenticated
+        ? { coupon_code: couponCode }
+        : { coupon_code: couponCode, guest_id: guestId };
       
       const headers = {
         "Content-Type": "application/json",
@@ -215,8 +215,8 @@ function CartProvider({ children }) {
       });
       
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || "Invalid coupon");
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.detail || error.message || "Invalid or expired coupon code");
       }
       
       await loadCart();
@@ -233,12 +233,10 @@ function CartProvider({ children }) {
   const removeCoupon = async () => {
     setCartLoading(true);
     try {
-      let url;
-      if (isAuthenticated && user?.email) {
-        url = `${BASE_URL}/cart/remove-coupon?user_email=${user.email}`;
-      } else {
-        url = `${BASE_URL}/cart/remove-coupon?guest_id=${guestId}`;
-      }
+      // Backend uses Bearer token for logged-in users, guest_id query param for guests
+      const url = isAuthenticated
+        ? `${BASE_URL}/cart/remove-coupon`
+        : `${BASE_URL}/cart/remove-coupon?guest_id=${guestId}`;
       
       const headers = getAuthHeaders();
       const response = await fetch(url, { method: "DELETE", headers });

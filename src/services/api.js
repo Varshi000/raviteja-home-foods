@@ -478,15 +478,17 @@ export const addShippingZone = async (adminId, country, stateName, zoneData) => 
       zone: {
         start_zipcode: parseInt(zoneData.startZipcode),
         end_zipcode: parseInt(zoneData.endZipcode),
-        charge_per_kg: parseFloat(zoneData.chargePerKg),
-        free_delivery_min_order_value: parseFloat(zoneData.freeDeliveryMinOrderValue),
+        charge_per_quantity: parseFloat(zoneData.chargePerQuantity),
+        free_delivery_min_order_value: (zoneData.freeDeliveryMinOrderValue !== "" && zoneData.freeDeliveryMinOrderValue !== undefined && zoneData.freeDeliveryMinOrderValue !== null)
+          ? parseFloat(zoneData.freeDeliveryMinOrderValue)
+          : null,
       },
     }),
   });
   return handleResponse(response);
 };
 
-export const updateShippingZone = async (adminId, country, stateName, startZipcode, endZipcode, chargePerKg, freeDeliveryMinOrder) => {
+export const updateShippingZone = async (adminId, country, stateName, startZipcode, endZipcode, chargePerQuantity, freeDeliveryMinOrder) => {
   const headers = {
     "Content-Type": "application/json",
     ...getAuthHeaders(),
@@ -498,10 +500,10 @@ export const updateShippingZone = async (adminId, country, stateName, startZipco
     old_end_zipcode: parseInt(endZipcode),
   };
 
-  if (chargePerKg !== undefined && chargePerKg !== null) {
-    body.new_charge_per_kg = parseFloat(chargePerKg);
+  if (chargePerQuantity !== undefined && chargePerQuantity !== null && chargePerQuantity !== "") {
+    body.new_charge_per_quantity = parseFloat(chargePerQuantity);
   }
-  if (freeDeliveryMinOrder !== undefined && freeDeliveryMinOrder !== null) {
+  if (freeDeliveryMinOrder !== undefined && freeDeliveryMinOrder !== null && freeDeliveryMinOrder !== "") {
     body.new_free_delivery_min_order_value = parseFloat(freeDeliveryMinOrder);
   }
 

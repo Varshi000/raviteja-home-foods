@@ -152,6 +152,32 @@
   color: #1a1a2e;
 }
 
+.business-type {
+  width: 140px;
+}
+
+.business-type-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+  text-transform: capitalize;
+  text-align: center;
+}
+
+.business-type-badge.retail {
+  background: linear-gradient(135deg, rgba(25, 118, 210, 0.15), rgba(144, 202, 249, 0.1));
+  color: #1565c0;
+  border: 1px solid #90caf9;
+}
+
+.business-type-badge.wholesale {
+  background: linear-gradient(135deg, rgba(123, 17, 19, 0.15), rgba(196, 165, 116, 0.1));
+  color: #7b1113;
+  border: 1px solid rgba(123, 17, 19, 0.3);
+}
+
 .subcategories-list {
   max-width: 400px;
 }

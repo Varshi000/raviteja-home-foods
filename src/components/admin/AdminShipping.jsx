@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import AdminSidebar from "./AdminSidebar";
 import AdminNavbar from "./AdminNavbar";
 import { useAuth } from "../../context/AuthContext";
-import { 
-  getShippingRules, 
-  createShippingRules, 
-  addShippingState, 
+import {
+  getShippingRules,
+  createShippingRules,
+  addShippingState,
   addShippingZone,
   updateShippingZone,
   deleteShippingZone,
@@ -21,7 +21,7 @@ function AdminShipping() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  
+
   // Modal toggle states
   const [activeModal, setActiveModal] = useState(null); // 'addCountry' | 'addState' | 'addZone' | 'editZone'
   const [selectedCountry, setSelectedCountry] = useState("");
@@ -34,7 +34,7 @@ function AdminShipping() {
   const [zoneFormData, setZoneFormData] = useState({
     startZipcode: "",
     endZipcode: "",
-    chargePerKg: "",
+    chargePerQuantity: "",
     freeDeliveryMinOrderValue: ""
   });
 
@@ -132,9 +132,9 @@ function AdminShipping() {
 
   const handleAddZone = async (e) => {
     e.preventDefault();
-    const { startZipcode, endZipcode, chargePerKg, freeDeliveryMinOrderValue } = zoneFormData;
+    const { startZipcode, endZipcode, chargePerQuantity, freeDeliveryMinOrderValue } = zoneFormData;
 
-    if (!startZipcode || !endZipcode || !chargePerKg) {
+    if (!startZipcode || !endZipcode || !chargePerQuantity) {
       showErrorMessage("Start Pincode, End Pincode, and Charge per KG are required");
       return;
     }
@@ -153,7 +153,7 @@ function AdminShipping() {
       setZoneFormData({
         startZipcode: "",
         endZipcode: "",
-        chargePerKg: "",
+        chargePerQuantity: "",
         freeDeliveryMinOrderValue: ""
       });
       showSuccessMessage("Zipcode delivery zone added successfully!");
@@ -186,7 +186,7 @@ function AdminShipping() {
     setZoneFormData({
       startZipcode: "",
       endZipcode: "",
-      chargePerKg: "",
+      chargePerQuantity: "",
       freeDeliveryMinOrderValue: ""
     });
     setActiveModal("addZone");
@@ -199,7 +199,7 @@ function AdminShipping() {
     setZoneFormData({
       startZipcode: zone.start_zipcode.toString(),
       endZipcode: zone.end_zipcode.toString(),
-      chargePerKg: zone.charge_per_kg.toString(),
+      chargePerQuantity:zone.charge_per_quantity.toString(),
       freeDeliveryMinOrderValue: zone.free_delivery_min_order_value.toString()
     });
     setActiveModal("editZone");
@@ -207,9 +207,9 @@ function AdminShipping() {
 
   const handleEditZone = async (e) => {
     e.preventDefault();
-    const { startZipcode, endZipcode, chargePerKg, freeDeliveryMinOrderValue } = zoneFormData;
+    const { startZipcode, endZipcode, chargePerQuantity, freeDeliveryMinOrderValue } = zoneFormData;
 
-    if (!chargePerKg && !freeDeliveryMinOrderValue) {
+    if (!chargePerQuantity && !freeDeliveryMinOrderValue) {
       showErrorMessage("Please update at least one field (charge or free delivery threshold)");
       return;
     }
@@ -218,12 +218,12 @@ function AdminShipping() {
     try {
       const adminId = user?.id || localStorage.getItem("admin_id") || "";
       await updateShippingZone(
-        adminId, 
-        selectedCountry, 
-        selectedState, 
+        adminId,
+        selectedCountry,
+        selectedState,
         selectedZone.start_zipcode,
         selectedZone.end_zipcode,
-        chargePerKg || undefined,
+        chargePerQuantity || undefined,
         freeDeliveryMinOrderValue || undefined
       );
       await loadShippingRules();
@@ -231,7 +231,7 @@ function AdminShipping() {
       setZoneFormData({
         startZipcode: "",
         endZipcode: "",
-        chargePerKg: "",
+        chargePerQuantity: "",
         freeDeliveryMinOrderValue: ""
       });
       showSuccessMessage("Delivery zone updated successfully!");
@@ -312,7 +312,7 @@ function AdminShipping() {
       <AdminSidebar />
       <div className="admin-main-container">
         <AdminNavbar title="Shipping Rules" />
-        
+
         <div className="admin-main-content">
           <div className="shipping-header">
             <div className="header-left">
@@ -389,13 +389,13 @@ function AdminShipping() {
                       <span className="state-count">{config.states?.length || 0} states configured</span>
                     </div>
                     <div className="country-actions">
-                      <button 
+                      <button
                         className="add-state-btn"
                         onClick={() => openAddStateModal(config.country)}
                       >
                         + Add State
                       </button>
-                      <button 
+                      <button
                         className="delete-country-btn"
                         onClick={() => handleDeleteCountry(config.country)}
                         title="Delete entire country and all states"
@@ -412,7 +412,7 @@ function AdminShipping() {
                         const isExpanded = !!expandedStates[`${config.country}-${state.state_name}`];
                         return (
                           <div key={state.state_name} className="state-accordion-item">
-                            <div 
+                            <div
                               className="state-accordion-header"
                               onClick={() => toggleStateAccordion(config.country, state.state_name)}
                             >
@@ -422,7 +422,7 @@ function AdminShipping() {
                                 <span className="zone-count-badge">{state.zones?.length || 0} zones</span>
                               </div>
                               <div className="state-actions">
-                                <button 
+                                <button
                                   className="add-zone-btn"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -431,7 +431,7 @@ function AdminShipping() {
                                 >
                                   + Add Zone
                                 </button>
-                                <button 
+                                <button
                                   className="delete-state-btn"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -454,7 +454,7 @@ function AdminShipping() {
                                         <tr>
                                           <th>Start Pincode</th>
                                           <th>End Pincode</th>
-                                          <th>Rate (₹ per KG)</th>
+                                          <th>Rate (₹ per Quantity)</th>
                                           <th>Min Bill for Free Delivery</th>
                                           <th>Actions</th>
                                         </tr>
@@ -464,19 +464,19 @@ function AdminShipping() {
                                           <tr key={idx}>
                                             <td className="pincode-cell">{zone.start_zipcode}</td>
                                             <td className="pincode-cell">{zone.end_zipcode}</td>
-                                            <td className="charge-cell">₹{zone.charge_per_kg}</td>
+                                            <td className="charge-cell">₹{zone.charge_per_quantity}</td>
                                             <td className="free-limit-cell">
                                               {zone.free_delivery_min_order_value > 0 ? `₹${zone.free_delivery_min_order_value}` : "N/A (Paid only)"}
                                             </td>
                                             <td className="actions-cell">
-                                              <button 
+                                              <button
                                                 className="btn-action btn-edit"
                                                 onClick={() => openEditZoneModal(config.country, state.state_name, zone)}
                                                 title="Edit zone"
                                               >
                                                 ✎ Edit
                                               </button>
-                                              <button 
+                                              <button
                                                 className="btn-action btn-delete"
                                                 onClick={() => handleDeleteZone(config.country, state.state_name, zone)}
                                                 title="Delete zone"
@@ -493,7 +493,7 @@ function AdminShipping() {
                                 ) : (
                                   <div className="empty-zones-prompt">
                                     <p>No shipping charge zones added for this state yet.</p>
-                                    <button 
+                                    <button
                                       onClick={() => openAddZoneModal(config.country, state.state_name)}
                                       className="btn-text"
                                     >
@@ -509,7 +509,7 @@ function AdminShipping() {
                     ) : (
                       <div className="empty-states-prompt">
                         <p>No states added for {config.country} yet.</p>
-                        <button 
+                        <button
                           onClick={() => openAddStateModal(config.country)}
                           className="btn-text"
                         >
@@ -603,7 +603,7 @@ function AdminShipping() {
             <form onSubmit={handleAddZone}>
               <div className="modal-body">
                 <p><strong>Target:</strong> {selectedCountry} › {selectedState}</p>
-                
+
                 <div className="form-row-group">
                   <div className="form-group">
                     <label>Start Zipcode (Pincode) *</label>
@@ -611,7 +611,7 @@ function AdminShipping() {
                       type="number"
                       required
                       value={zoneFormData.startZipcode}
-                      onChange={(e) => setZoneFormData({...zoneFormData, startZipcode: e.target.value})}
+                      onChange={(e) => setZoneFormData({ ...zoneFormData, startZipcode: e.target.value })}
                       className="form-input"
                       placeholder="e.g. 500001"
                       min="1"
@@ -623,7 +623,7 @@ function AdminShipping() {
                       type="number"
                       required
                       value={zoneFormData.endZipcode}
-                      onChange={(e) => setZoneFormData({...zoneFormData, endZipcode: e.target.value})}
+                      onChange={(e) => setZoneFormData({ ...zoneFormData, endZipcode: e.target.value })}
                       className="form-input"
                       placeholder="e.g. 500100"
                       min="1"
@@ -633,12 +633,12 @@ function AdminShipping() {
 
                 <div className="form-row-group">
                   <div className="form-group">
-                    <label>Charge per KG (INR) *</label>
+                    <label>Charge per Quantity (INR) *</label>
                     <input
                       type="number"
                       required
-                      value={zoneFormData.chargePerKg}
-                      onChange={(e) => setZoneFormData({...zoneFormData, chargePerKg: e.target.value})}
+                      value={zoneFormData.chargePerQuantity}
+                      onChange={(e) => setZoneFormData({ ...zoneFormData, chargePerQuantity: e.target.value })}
                       className="form-input"
                       placeholder="e.g. 30"
                       min="0"
@@ -650,7 +650,7 @@ function AdminShipping() {
                     <input
                       type="number"
                       value={zoneFormData.freeDeliveryMinOrderValue}
-                      onChange={(e) => setZoneFormData({...zoneFormData, freeDeliveryMinOrderValue: e.target.value})}
+                      onChange={(e) => setZoneFormData({ ...zoneFormData, freeDeliveryMinOrderValue: e.target.value })}
                       className="form-input"
                       placeholder="e.g. 500 (Set 0 to disable free delivery - Optional)"
                       min="0"
@@ -681,7 +681,7 @@ function AdminShipping() {
             <form onSubmit={handleEditZone}>
               <div className="modal-body">
                 <p><strong>Target:</strong> {selectedCountry} › {selectedState}</p>
-                
+
                 <div className="form-row-group">
                   <div className="form-group">
                     <label>Start Zipcode (Pincode)</label>
@@ -707,11 +707,11 @@ function AdminShipping() {
 
                 <div className="form-row-group">
                   <div className="form-group">
-                    <label>Charge per KG (INR) - Optional</label>
+                    <label>Charge per Quantity (INR) - Optional</label>
                     <input
                       type="number"
-                      value={zoneFormData.chargePerKg}
-                      onChange={(e) => setZoneFormData({...zoneFormData, chargePerKg: e.target.value})}
+                      value={zoneFormData.chargePerQuantity}
+                      onChange={(e) => setZoneFormData({ ...zoneFormData, chargePerQuantity: e.target.value })}
                       className="form-input"
                       placeholder="Leave empty to keep current value"
                       min="0"
@@ -723,7 +723,7 @@ function AdminShipping() {
                     <input
                       type="number"
                       value={zoneFormData.freeDeliveryMinOrderValue}
-                      onChange={(e) => setZoneFormData({...zoneFormData, freeDeliveryMinOrderValue: e.target.value})}
+                      onChange={(e) => setZoneFormData({ ...zoneFormData, freeDeliveryMinOrderValue: e.target.value })}
                       className="form-input"
                       placeholder="Leave empty to keep current value"
                       min="0"

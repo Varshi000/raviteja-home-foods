@@ -45,21 +45,11 @@ function CartPage() {
   const [calcLoading, setCalcLoading] = useState(false);
   const [calcError, setCalcError] = useState("");
 
-  const parseWeightGrams = (weightStr) => {
-    if (!weightStr) return 0;
-    const normalized = weightStr.trim().toLowerCase().replace(/\s+/g, "");
-    const match = normalized.match(/^([0-9.]+)(kg|g)$/);
-    if (!match) return 0;
-    const amount = parseFloat(match[1]);
-    const unit = match[2];
-    return unit === "kg" ? amount * 1000 : amount;
-  };
-
-  const calculateCartWeightGrams = (items) => {
-    return items.reduce((total, item) => {
-      const grams = parseWeightGrams(item.weight);
-      return total + grams * (item.quantity || 0);
-    }, 0);
+  const calculateCartQuantity = (items) => {
+    return items.reduce(
+        (total, item) => total + (item.quantity || 0),
+        0
+    );
   };
 
   const handleCalculateShipping = async () => {
@@ -75,14 +65,16 @@ function CartPage() {
 
     setCalcLoading(true);
     try {
-      const weightGrams = calculateCartWeightGrams(cartItems);
-      const res = await estimateShipping(
-        "India",
-        shippingState,
-        shippingPincode,
-        weightGrams,
-        totalPreview
-      );
+        const cartQuantity =
+            calculateCartQuantity(cartItems);
+
+        const res = await estimateShipping(
+            "India",
+            shippingState,
+            shippingPincode,
+            cartQuantity,
+            totalPreview
+        );
       setShippingCharge(res.shipping_charge);
     } catch (err) {
       console.error(err);

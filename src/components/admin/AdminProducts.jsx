@@ -24,6 +24,7 @@ const BASE_URL = "/api";
 function AdminProducts() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [formCategories, setFormCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -39,6 +40,7 @@ function AdminProducts() {
   const [formData, setFormData] = useState({
     product_name: "",
     description: "",
+    business_type: "retail",
     category_id: "",
     subcategory: "",
     pricing: [{ weight: "", price: "", stock: "" }],
@@ -253,6 +255,57 @@ function AdminProducts() {
     }
   }, [token]);
 
+  // Load categories matching selected business type for form
+  useEffect(() => {
+    const loadFormCategories = async () => {
+      if (!formData.business_type || !token) return;
+      try {
+        const authToken = token || localStorage.getItem("access_token");
+        const adminId = user?.id || localStorage.getItem("admin_id") || "69e716e0c92ec21200cfe22a";
+        const response = await fetch(`${BASE_URL}/categories/by-business-type/${formData.business_type}?admin_id=${adminId}`, {
+          headers: { "Authorization": `Bearer ${authToken}` },
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+
+        let categoriesArray = [];
+        if (data.data && Array.isArray(data.data)) {
+          categoriesArray = data.data;
+        } else if (Array.isArray(data)) {
+          categoriesArray = data;
+        } else if (data.categories && Array.isArray(data.categories)) {
+          categoriesArray = data.categories;
+        }
+
+        let categoryList = [];
+        if (categoriesArray.length > 0) {
+          categoryList = categoriesArray
+            .filter(cat => cat && (cat.name || cat.id || cat._id))
+            .map((cat) => {
+              const rawSubcategories = Array.isArray(cat.subcategory)
+                ? cat.subcategory
+                : Array.isArray(cat.subcategories)
+                  ? cat.subcategories
+                  : [];
+
+              return {
+                id: cat._id || cat.id,
+                name: cat.name,
+                subcategories: rawSubcategories
+                  .map((sub) => (typeof sub === "string" ? sub : sub?.name || sub?.label || sub?.value))
+                  .filter(Boolean),
+              };
+            });
+        }
+        setFormCategories(categoryList);
+      } catch (err) {
+        console.error("Failed to load form categories:", err);
+        setFormCategories([]);
+      }
+    };
+    loadFormCategories();
+  }, [formData.business_type, token, user]);
+
   // Create product
   const handleAddProduct = async (e) => {
     e.preventDefault();
@@ -284,7 +337,7 @@ function AdminProducts() {
       const formDataToSend = new FormData();
       formDataToSend.append("product_name", formData.product_name.trim());
       formDataToSend.append("description", formData.description || "");
-      formDataToSend.append("business_type", "retail");
+      formDataToSend.append("business_type", formData.business_type);
       formDataToSend.append("category_id", formData.category_id);
       if (formData.subcategory) {
         formDataToSend.append("subcategory", formData.subcategory);
@@ -337,6 +390,7 @@ function AdminProducts() {
     setFormData({
       product_name: product.product_name || "",
       description: product.description || "",
+      business_type: product.business_type || "retail",
       category_id: product.category_id || "",
       subcategory: product.subcategory || "",
       pricing: pricingData.map(p => ({
@@ -376,6 +430,7 @@ function AdminProducts() {
       const formDataToSend = new FormData();
       formDataToSend.append("product_name", formData.product_name.trim());
       formDataToSend.append("description", formData.description || "");
+      formDataToSend.append("business_type", formData.business_type);
       formDataToSend.append("category_id", formData.category_id);
       if (formData.subcategory) {
         formDataToSend.append("subcategory", formData.subcategory);
@@ -449,6 +504,7 @@ function AdminProducts() {
     setFormData({
       product_name: "",
       description: "",
+      business_type: "retail",
       category_id: "",
       subcategory: "",
       pricing: [{ weight: "", price: "", stock: "" }],
@@ -495,7 +551,7 @@ function AdminProducts() {
     return matchesSearch && matchesCategory;
   });
 
-  const selectedCategoryData = categories.find((cat) => cat.id === formData.category_id);
+  const selectedCategoryData = formCategories.find((cat) => cat.id === formData.category_id);
   const selectedSubcategories = Array.isArray(selectedCategoryData?.subcategories)
     ? selectedCategoryData.subcategories.filter(Boolean)
     : [];
@@ -590,6 +646,7 @@ function AdminProducts() {
                   <tr>
                     <th>Image</th>
                     <th>Product Name</th>
+                    <th>Business Type</th>
                     <th>Category</th>
                     <th>Price</th>
                     <th>Stock</th>
@@ -608,6 +665,11 @@ function AdminProducts() {
                         />
                       </td>
                       <td className="product-name">{product.product_name}</td>
+                      <td>
+                        <span className={`business-badge ${product.business_type || "retail"}`}>
+                          {product.business_type ? product.business_type.charAt(0).toUpperCase() + product.business_type.slice(1) : "Retail"}
+                        </span>
+                      </td>
                       <td className="category-name">{getCategoryName(product.category_id)}</td>
                       <td>{formatCurrency(product.pricing?.[0]?.price || 0)}</td>
                       <td>{product.pricing?.[0]?.stock || "N/A"}</td>
@@ -667,6 +729,19 @@ function AdminProducts() {
                       className="form-input"
                       placeholder="e.g., Gulab Jamun, Kaju Katli"
                     />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Business Type *</label>
+                    <select
+                      value={formData.business_type}
+                      onChange={(e) => setFormData({ ...formData, business_type: e.target.value, category_id: "", subcategory: "" })}
+                      className="form-input"
+                      required
+                    >
+                      <option value="retail">Retail</option>
+                      <option value="wholesale">Wholesale</option>
+                    </select>
                   </div>
 
                   <div className="form-group">
@@ -741,7 +816,7 @@ function AdminProducts() {
                       required
                     >
                       <option value="">Select a category</option>
-                      {categories.map(cat => (
+                      {formCategories.map(cat => (
                         <option key={cat.id} value={cat.id}>{cat.name}</option>
                       ))}
                     </select>
@@ -883,6 +958,19 @@ function AdminProducts() {
                   </div>
 
                   <div className="form-group">
+                    <label>Business Type *</label>
+                    <select
+                      value={formData.business_type}
+                      onChange={(e) => setFormData({ ...formData, business_type: e.target.value, category_id: "", subcategory: "" })}
+                      className="form-input"
+                      required
+                    >
+                      <option value="retail">Retail</option>
+                      <option value="wholesale">Wholesale</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
                     <label>Description</label>
                     <textarea
                       value={formData.description}
@@ -953,7 +1041,7 @@ function AdminProducts() {
                       required
                     >
                       <option value="">Select a category</option>
-                      {categories.map(cat => (
+                      {formCategories.map(cat => (
                         <option key={cat.id} value={cat.id}>{cat.name}</option>
                       ))}
                     </select>

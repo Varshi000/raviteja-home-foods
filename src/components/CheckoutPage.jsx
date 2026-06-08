@@ -193,12 +193,25 @@ function CheckoutPage() {
   };
 
   // Estimate delivery charge
-  const estimateDeliveryCharge = async () => {
-    if (!shippingAddress.pincode || shippingAddress.pincode.length !== 6) return;
-    
-    setShippingLoading(true);
-    try {
-      const response = await fetch(`${BASE_URL}/orders/delivery-estimate`, {
+const estimateDeliveryCharge = async () => {
+  if (
+    !shippingAddress.pincode ||
+    shippingAddress.pincode.length !== 6
+  ) {
+    return;
+  }
+
+  setShippingLoading(true);
+
+  try {
+    const cartQuantity = cartItems.reduce(
+      (total, item) => total + (item.quantity || 0),
+      0
+    );
+
+    const response = await fetch(
+      `${BASE_URL}/orders/delivery-estimate`,
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -209,24 +222,40 @@ function CheckoutPage() {
           state: shippingAddress.state,
           pincode: shippingAddress.pincode,
           guest_id: guestId,
+
+          // NEW FIELD
+          cart_quantity: cartQuantity,
         }),
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        console.error("Delivery estimate error:", error);
-        setDeliveryCharge(0);
-      } else {
-        const data = await response.json();
-        setDeliveryCharge(data.shipping_charge || 0);
       }
-    } catch (err) {
-      console.error("Delivery estimation failed:", err);
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+
+      console.error(
+        "Delivery estimate error:",
+        error
+      );
+
       setDeliveryCharge(0);
-    } finally {
-      setShippingLoading(false);
+    } else {
+      const data = await response.json();
+
+      setDeliveryCharge(
+        data.shipping_charge || 0
+      );
     }
-  };
+  } catch (err) {
+    console.error(
+      "Delivery estimation failed:",
+      err
+    );
+
+    setDeliveryCharge(0);
+  } finally {
+    setShippingLoading(false);
+  }
+};
 
   useEffect(() => {
     if (shippingAddress.pincode.length === 6 && shippingAddress.state && cartItems.length > 0) {

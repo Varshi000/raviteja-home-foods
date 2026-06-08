@@ -531,6 +531,7 @@ function AdminCategories() {
                   <tr>
                     <th>S.No</th>
                     <th>Category Name</th>
+                    <th>Business Type</th>
                     <th>Subcategories</th>
                     <th>Actions</th>
                   </tr>
@@ -540,6 +541,11 @@ function AdminCategories() {
                     <tr key={category.id}>
                       <td className="serial-no">{index + 1}</td>
                       <td className="category-name">{category.name}</td>
+                      <td className="business-type">
+                        <span className={`business-type-badge ${category.business_type || "retail"}`}>
+                          {category.business_type || "retail"}
+                        </span>
+                      </td>
                       <td className="subcategories-list">
                         <div className="subcategory-tags">
                           {category.subcategory && category.subcategory.length > 0 ? (
@@ -642,6 +648,17 @@ function AdminCategories() {
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                   className="form-input"
                 />
+              </div>
+              <div className="form-group">
+                <label>Business Type</label>
+                <select
+                  value={formData.business_type}
+                  onChange={(e) => setFormData({...formData, business_type: e.target.value})}
+                  className="form-input"
+                >
+                  <option value="retail">Retail</option>
+                  <option value="wholesale">Wholesale</option>
+                </select>
               </div>
               <div className="modal-actions">
                 <button type="button" className="btn-secondary" onClick={() => setShowEditModal(false)}>Cancel</button>

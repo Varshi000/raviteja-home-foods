@@ -311,6 +311,27 @@
   border: 1px solid #ffb74d;
 }
 
+.business-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.business-badge.retail {
+  background: linear-gradient(135deg, rgba(25, 118, 210, 0.15), rgba(33, 150, 243, 0.1));
+  color: #1565c0;
+  border: 1px solid #90caf9;
+}
+
+.business-badge.wholesale {
+  background: linear-gradient(135deg, rgba(123, 17, 19, 0.15), rgba(199, 168, 76, 0.1));
+  color: #7b1113;
+  border: 1px solid #c9a84c;
+}
+
+
 .actions {
   display: flex;
   gap: 8px;

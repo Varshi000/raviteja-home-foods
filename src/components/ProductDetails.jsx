@@ -174,6 +174,7 @@ function ProductDetails() {
       image_url: product.images_url?.[0],
       selectedWeight: selectedWeight,
       price: getCurrentPrice(),
+      business_type: product.business_type,
     };
     
     const result = await addToCart(productToAdd, quantity);
