@@ -841,7 +841,7 @@ const estimateDeliveryCharge = async () => {
             </div>
             
             <p className="shipping-note">
-              <Truck size={13} /> Free delivery on orders above ₹499
+              <Truck size={13} /> Free delivery on orders above ₹999
             </p>
           </div>
         </div>

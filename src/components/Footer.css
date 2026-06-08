@@ -201,6 +201,15 @@
   letter-spacing: 0.2px;
 }
 
+/* Plain line-by-line text block under the logo */
+.brand-plain-line {
+  font-size: 0.78rem;
+  color: #aaa;
+  line-height: 1.7;
+  margin-bottom: 2px;
+  letter-spacing: 0.1px;
+}
+
 .brand-secret {
   font-style: italic;
   color: #bbb !important;
@@ -269,4 +278,84 @@
   letter-spacing: 0.5px;
   margin: 0 !important;
   font-family: 'Courier New', monospace;
+}
+
+/* ── Brand Identity Lines ── */
+.brand-trademark-line {
+  font-size: 0.82rem !important;
+  color: var(--secondary-color) !important;
+  font-weight: 600;
+  margin-bottom: 3px !important;
+}
+
+.brand-copy-line {
+  font-size: 0.75rem !important;
+  color: #888 !important;
+  margin-bottom: 0 !important;
+}
+
+.brand-secret-line {
+  margin-bottom: 6px !important;
+}
+
+/* ── Divider ── */
+.brand-divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 12px 0;
+}
+
+/* ── Credentials & Contact Blocks ── */
+.brand-credentials,
+.brand-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* FSSAI badge inside credentials */
+.brand-credentials .fssai-badge {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+/* Row: label above value */
+.brand-info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.brand-info-label {
+  font-size: 0.62rem;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  font-weight: 500;
+}
+
+.brand-info-value {
+  font-size: 0.74rem;
+  color: #bbb;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.3px;
+  word-break: break-all;
+}
+
+/* Clickable contact links */
+.brand-contact-link {
+  font-size: 0.76rem !important;
+  color: var(--secondary-color) !important;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.25s ease, opacity 0.25s ease;
+  display: inline !important;
+  margin-bottom: 0 !important;
+  letter-spacing: 0.2px;
+}
+
+.brand-contact-link:hover {
+  color: var(--secondary-light) !important;
+  opacity: 0.9;
 }

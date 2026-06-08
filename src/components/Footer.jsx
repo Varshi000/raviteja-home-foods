@@ -36,31 +36,14 @@ function Footer() {
             <img src="/logo.png" alt="Raviteja Home Foods" className="footer-logo" />
           </Link>
           <div className="footer-brand-info">
-            <p className="brand-legal-line">
-              <span className="brand-secret">Trade Secret Protected Formula</span>
-            </p>
-            <p className="brand-legal-line">
-              <span>RAVITEJA<sup>®</sup> Registered Trademark</span>
-            </p>
-            <p className="brand-legal-line">
-              <span>Copyright © Raviteja Home Foods Pvt. Ltd.</span>
-            </p>
-
-            {/* FSSAI Badge */}
-            <div className="fssai-badge">
-              <div className="fssai-logo-wrap">
-                <span className="fssai-text">
-                  <em className="fssai-f">f</em>ssai
-                  <span className="fssai-leaf">🌿</span>
-                </span>
-                <div className="fssai-bar" />
-              </div>
-              <p className="fssai-lic">Lic. No. 23626032003783</p>
-              <p className="fssai-lic" style={{ marginTop: '4px', fontSize: '0.85em', color: '#888' }}>
-                Distributed By MOM GLOBAL EXPORTS <br /> 
-                FSSAI Licence no 13626999000388
-              </p>
-            </div>
+            <p className="brand-plain-line">RAVITEJA<sup>®</sup> Registered Trademark</p>
+            <p className="brand-plain-line">Copyright © Raviteja Home Foods Pvt. Ltd.</p>
+            <p className="brand-plain-line">Manufacturer FSSAI License No: 23626032003783</p>
+            <p className="brand-plain-line">Marketed &amp; Distributed by MOM Global Exports</p>
+            <p className="brand-plain-line">Exporter FSSAI License No: 13626999000388</p>
+            <p className="brand-plain-line">GSTIN: XXXXXXX</p>
+            <p className="brand-plain-line">Customer Care: <a href="tel:+919000319969" className="brand-contact-link">+91 9000319969</a></p>
+            <p className="brand-plain-line">Email: <a href="mailto:Raviteja.HF@gmail.com" className="brand-contact-link">Raviteja.HF@gmail.com</a></p>
           </div>
         </div>
 

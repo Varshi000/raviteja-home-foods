@@ -7,7 +7,7 @@ function TopBar() {
     <div className="top-bar">
       <div className="top-bar-inner">
         <span className="top-bar-item">
-          <Truck size={13} /> Free Delivery on Orders Above ₹499
+          <Truck size={13} /> Free Delivery on Orders Above ₹999
         </span>
         <span className="top-bar-sep">·</span>
         <span className="top-bar-item">
