@@ -56,6 +56,10 @@ function Footer() {
                 <div className="fssai-bar" />
               </div>
               <p className="fssai-lic">Lic. No. 23626032003783</p>
+              <p className="fssai-lic" style={{ marginTop: '4px', fontSize: '0.85em', color: '#888' }}>
+                Distributed By MOM GLOBAL EXPORTS <br /> 
+                FSSAI Licence no 13626999000388
+              </p>
             </div>
           </div>
         </div>

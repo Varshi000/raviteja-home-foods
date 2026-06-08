@@ -5,6 +5,7 @@ import { fetchProductById, fetchProductReviews, createReview } from "../services
 import { CartContext } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import SEO from "./SEO";
+import { ShoppingCart, Check } from "lucide-react";
 import "./ProductDetails.css";
 
 function ProductDetails() {
@@ -382,7 +383,15 @@ function ProductDetails() {
                 className={`btn-cart ${addedToCart ? "added" : ""}`}
                 onClick={handleAddToCart}
               >
-                {addedToCart ? "✓ Added to Cart" : "🛒 Add to Cart"}
+                {addedToCart ? (
+                  <>
+                    <Check size={18} /> Added to Cart
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart size={18} /> Add to Cart
+                  </>
+                )}
               </button>
             </div>
 

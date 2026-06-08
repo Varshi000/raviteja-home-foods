@@ -140,7 +140,11 @@ function CartPage() {
 
             {cartItems.map((item, index) => (
               <div className="cart-card" key={index}>
-                <img src={item.image_url || defaultImg} alt={item.product_name} />
+                <img 
+                  src={item.image_url && item.image_url.length > 5 ? item.image_url : defaultImg} 
+                  alt={item.product_name} 
+                  onError={(e) => { e.target.onerror = null; e.target.src = defaultImg; }}
+                />
 
                 <div className="cart-info">
                   <h3>{item.product_name}</h3>
