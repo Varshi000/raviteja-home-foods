@@ -54,9 +54,55 @@ export const fetchActiveProducts = async () => {
 };
 
 export const fetchProductsByCategory = async (categoryId) => {
-  const response = await fetch(`${BASE_URL}/products/active-by-category?category_id=${categoryId}`);
-  const data = await handleResponse(response);
-  return Array.isArray(data) ? data : data.data || [];
+  console.log("[API] fetchProductsByCategory called with:", categoryId);
+  try {
+    const response = await fetch(`${BASE_URL}/products/active-by-category?category_id=${categoryId}`);
+    const data = await handleResponse(response);
+    const products = Array.isArray(data) ? data : data.data || [];
+    console.log("[API] Backend returned", products.length, "products");
+    if (products.length > 0) {
+      return products;
+    }
+    console.warn(`[API] fetchProductsByCategory: no products returned for category_id=${categoryId}`);
+  } catch (err) {
+    console.warn(`[API] fetchProductsByCategory: backend unavailable or failed for category_id=${categoryId}`, err);
+  }
+
+  // Fallback to local product catalogue when backend lookup fails or returns no products.
+  console.log("[API] Using local fallback for categoryId:", categoryId);
+  const allLocalProducts = localProductData.map(mapLocalProduct);
+  console.log("[API] Total local products:", allLocalProducts.length);
+  
+  const filtered = allLocalProducts.filter((product) => {
+    const categoryIdValue = String(product.category_id || "").toLowerCase();
+    const categoryName = String(product.category_name || "").toLowerCase();
+    const requestedId = String(categoryId || "").toLowerCase();
+    
+    // Normalize for typos: "pickels" → "pickles", etc.
+    const normalizedCatId = categoryIdValue.replace(/els$/, "les");
+    const normalizedCatName = categoryName.replace(/els$/, "les");
+    const normalizedRequestedId = requestedId.replace(/els$/, "les");
+    
+    const matches = (
+      normalizedCatId === normalizedRequestedId ||
+      normalizedCatName === normalizedRequestedId ||
+      normalizedCatName.replace(/\s+/g, "-") === normalizedRequestedId
+    );
+    
+    if (matches && product.category_name === "Pickles") {
+      console.log("[API] Match found:", product.product_name, "| categoryId:", categoryIdValue, "| categoryName:", categoryName, "| requestedId:", requestedId);
+    }
+    
+    return matches;
+  });
+  
+  console.log("[API] Filtered local products for", categoryId, ":", filtered.length);
+  if (categoryId === "pickles" || categoryId.includes("pickle")) {
+    console.log("[API] PICKLES DEBUG - Looking for pickles products");
+    console.log("[API] Sample of pickles from local data:", allLocalProducts.filter(p => p.category_name === "Pickles").slice(0, 3).map(p => ({ name: p.product_name, catId: p.category_id, catName: p.category_name })));
+  }
+  
+  return filtered;
 };
 
 export const fetchProductById = async (productId) => {

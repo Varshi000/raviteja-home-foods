@@ -77,12 +77,19 @@ function Header() {
               label: cat.name.toUpperCase(),
               to: `/category/${slug}`,
               key: slug,
-              subcategories: cat.subcategory && Array.isArray(cat.subcategory) && cat.subcategory.length > 0
-                ? cat.subcategory.map((sub) => ({
-                    label: sub.name,
-                    dbValue: sub.name,
-                  }))
-                : null,
+              subcategories: (() => {
+                const rawSubcategories = cat.subcategory || cat.subcategories;
+                return rawSubcategories && Array.isArray(rawSubcategories) && rawSubcategories.length > 0
+                  ? rawSubcategories
+                      .map((sub) => {
+                        const value = typeof sub === "string"
+                          ? sub
+                          : sub?.name || sub?.label || "";
+                        return { label: value, dbValue: value };
+                      })
+                      .filter((sub) => sub.label)
+                  : null;
+              })(),
             };
           });
           setNavItems(mapped);

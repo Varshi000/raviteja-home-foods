@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
-import { fetchCategoriesWithSubcategories, fetchProductsByCategory } from "../services/api";
+import { fetchActiveProducts, fetchCategoriesWithSubcategories, fetchProductsByCategory } from "../services/api";
 import SEO from "./SEO";
 import "./CategoryPage.css";
 
@@ -44,33 +44,57 @@ function CategoryPage() {
     loadData();
   }, [type, subcategoryParam]);
 
+  const resolveCategoryId = (category) => {
+    if (!category) return "";
+    return category._id || category.id || category.category_id || category.name?.toLowerCase().trim().replace(/\s+/g, "-") || "";
+  };
+
   const loadData = async () => {
     setLoading(true);
+    console.log("[CategoryPage] Loading data for type:", type);
     try {
       // Fetch dynamic category information first
       const catsResponse = await fetchCategoriesWithSubcategories();
       const cats = catsResponse && Array.isArray(catsResponse.data) ? catsResponse.data : [];
+      console.log("[CategoryPage] Fetched categories:", cats.map(c => c.name));
       
       const matchedCategory = cats.find(
-        (c) => c.name.toLowerCase().trim().replace(/\s+/g, "-") === type
+        (c) => {
+          const apiCategorySlug = c.name.toLowerCase().trim().replace(/\s+/g, "-");
+          // Handle typos: "PICKELS" → "pickles", etc.
+          const normalizedApiSlug = apiCategorySlug.replace(/els$/, "les");
+          return normalizedApiSlug === type || apiCategorySlug === type;
+        }
       );
+      console.log("[CategoryPage] Matched category:", matchedCategory?.name);
 
       if (matchedCategory) {
         setCategoryName(matchedCategory.name);
         
-        const apiSubcategories = matchedCategory.subcategory && matchedCategory.subcategory.length > 0
-          ? matchedCategory.subcategory.map((sub) => ({
-              label: sub.name,
-              dbValue: sub.name,
-            }))
+        const rawSubcategories = matchedCategory.subcategory || matchedCategory.subcategories;
+        const apiSubcategories = Array.isArray(rawSubcategories) && rawSubcategories.length > 0
+          ? rawSubcategories
+              .map((sub) => {
+                const value = typeof sub === "string"
+                  ? sub
+                  : sub?.name || sub?.label || "";
+                return { label: value, dbValue: value };
+              })
+              .filter((sub) => sub.label)
           : [];
+        console.log("[CategoryPage] API Subcategories:", apiSubcategories.map(s => s.label));
         setSubcategories(apiSubcategories);
+
+        const categoryId = resolveCategoryId(matchedCategory);
+        console.log("[CategoryPage] Resolved category ID:", categoryId);
 
         // Fetch products
         if (subcategoryParam) {
+          console.log("[CategoryPage] Loading products for subcategory:", subcategoryParam);
           await loadProductsBySubcategory(subcategoryParam);
         } else {
           if (apiSubcategories.length > 0) {
+            console.log("[CategoryPage] Fetching products for all subcategories...");
             // Fetch all subcategories in parallel
             const results = await Promise.all(
               apiSubcategories.map((sub) =>
@@ -83,6 +107,7 @@ function CategoryPage() {
               )
             );
             const merged = results.flat();
+            console.log("[CategoryPage] Merged subcategory products count:", merged.length);
             const seen = new Set();
             const unique = merged.filter((p) => {
               const id = p.id || p._id;
@@ -90,22 +115,55 @@ function CategoryPage() {
               seen.add(id);
               return true;
             });
-            setProducts(unique);
+
+            if (unique.length > 0) {
+              console.log("[CategoryPage] Using subcategory products:", unique.length);
+              setProducts(unique);
+            } else {
+              console.log("[CategoryPage] Subcategory products empty, falling back to category fetch");
+              const catProducts = await fetchProductsByCategory(categoryId);
+              console.log("[CategoryPage] Category fallback products:", catProducts.length);
+              setProducts(catProducts);
+            }
           } else {
+            console.log("[CategoryPage] No subcategories, fetching by category ID");
             // No subcategories, fetch all products for this category using category_id
-            const catProducts = await fetchProductsByCategory(matchedCategory.id);
+            const catProducts = await fetchProductsByCategory(categoryId);
+            console.log("[CategoryPage] Category products:", catProducts.length);
             setProducts(catProducts);
           }
         }
       } else {
+        console.log("[CategoryPage] Category not found in API, using local fallback");
         // Fallback for static category names if not matching dynamic API
         const fallbackName = CATEGORY_NAMES[type] || type?.charAt(0).toUpperCase() + type?.slice(1);
         setCategoryName(fallbackName);
         setSubcategories([]);
-        setProducts([]);
+
+        const allProducts = await fetchActiveProducts();
+        console.log("[CategoryPage] All local products:", allProducts.length);
+        const fallbackProducts = allProducts.filter((product) => {
+          const productCategoryId = String(product.category_id || "").toLowerCase();
+          const productCategoryName = String(product.category_name || "").toLowerCase();
+          const slug = String(type || "").toLowerCase();
+          
+          // Normalize for typos: "pickels" → "pickles"
+          const normalizedProductId = productCategoryId.replace(/els$/, "les");
+          const normalizedProductName = productCategoryName.replace(/els$/, "les");
+          const normalizedSlug = slug.replace(/els$/, "les");
+          
+          return (
+            normalizedProductId === normalizedSlug ||
+            normalizedProductName === normalizedSlug ||
+            normalizedProductName.replace(/\s+/g, "-") === normalizedSlug
+          );
+        });
+        console.log("[CategoryPage] Fallback filtered products:", fallbackProducts.length);
+
+        setProducts(fallbackProducts);
       }
     } catch (err) {
-      console.error("Failed to load category data:", err);
+      console.error("[CategoryPage] Failed to load category data:", err);
       setProducts([]);
     } finally {
       setLoading(false);
@@ -115,15 +173,41 @@ function CategoryPage() {
   // Load products for a specific subcategory via API
   const loadProductsBySubcategory = async (subcategory) => {
     try {
+      console.log("[CategoryPage] Fetching products for subcategory:", subcategory);
       const response = await fetch(
         `${BASE_URL}/categories/all_products_by_subCategory/${encodeURIComponent(subcategory)}`
       );
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
-      setProducts(data.data || []);
+      const products = data.data || [];
+      console.log("[CategoryPage] Subcategory API returned:", products.length, "products");
+      
+      if (products.length > 0) {
+        setProducts(products);
+      } else {
+        console.log("[CategoryPage] Subcategory returned empty, falling back to local");
+        const allProducts = await fetchActiveProducts();
+        const localSubcatProducts = allProducts.filter((p) => 
+          p.subcategory && p.subcategory.toLowerCase() === subcategory.toLowerCase()
+        );
+        console.log("[CategoryPage] Local subcategory products:", localSubcatProducts.length);
+        setProducts(localSubcatProducts);
+      }
     } catch (err) {
-      console.error("Failed to load products by subcategory:", err);
-      setProducts([]);
+      console.error("[CategoryPage] Failed to load products by subcategory:", err);
+      console.log("[CategoryPage] Falling back to local products for subcategory");
+      
+      try {
+        const allProducts = await fetchActiveProducts();
+        const localSubcatProducts = allProducts.filter((p) => 
+          p.subcategory && p.subcategory.toLowerCase() === subcategory.toLowerCase()
+        );
+        console.log("[CategoryPage] Local fallback subcategory products:", localSubcatProducts.length);
+        setProducts(localSubcatProducts);
+      } catch (localErr) {
+        console.error("[CategoryPage] Local fallback also failed:", localErr);
+        setProducts([]);
+      }
     }
   };
 
